@@ -25,10 +25,9 @@ const getDeviceDetails = () => {
 };
 
 const USERS_DB = [
-  { username: 'admin', hash: '$2b$10$Wi5OE4ZlocW49O/8qDbbgOatoV5Nbn/ug9pTLJohPdkoS53PU5MI2', role: 'admin', name: 'Administrator' },
+  { username: 'admin', hash: '$2b$10$JFjSmI3KdAiP9diWPHnloOtkBmOAIteR8XHSodNInc4e/uDeZYw3.', role: 'admin', name: 'Administrator' },
   { username: 'demo', hash: '$2b$10$P8.kmq08IebevVfYBV2HRuklURWXNBcKqqcub5PnWpYaYUA6iUSX2', role: 'demo', name: 'Manager' },
-  { username: 'pushpa', hash: '$2b$10$Cm5gvq8M5UMg/E5c3xb0MObavpgU2f1TsFff2A84UM.7YbHsbvwwS', role: 'user', name: 'Staff' },
-  { username: 'santosh', hash: '$2b$10$Psmc.ocZNxrl4JaPDdQlj.2p8w3xyL5bpCWjyvuzsKyF1/VbnWg3q', role: 'user', name: 'Staff' }
+  { username: 'master', hash: '$2b$10$ofJDM5/K4O65.j0rtiaZyOeIHZhRP837o.5tVLtQKkpChGIVMDan6', role: 'user', name: 'Staff' }
 ];
 
 function App() {
@@ -148,7 +147,7 @@ function App() {
         <Route path='/yarn' element={<YarnQuality />} />
         <Route path='/attendancerecord' element={currentUser.role === 'admin' ? <AttendanceRecord /> : <Navigate to="/" />} />
         <Route path='/productionreport' element={currentUser.role === 'admin' ? <ProductionReport /> : <Navigate to="/" />} />
-        <Route path='/adminreport' element={<AdminReport currentUser={currentUser}/>} />
+        <Route path='/adminreport' element={<AdminReport currentUser={currentUser} />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </div>
