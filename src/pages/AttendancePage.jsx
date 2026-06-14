@@ -287,7 +287,7 @@ export default function AttendancePage({ currentUser }) {
           <div className="add-emp-box">
             <input placeholder="New Employee Name" value={newEmpName} onChange={e => setNewEmpName(e.target.value)} />
             <input type="number" placeholder="Rate" style={{ width: '80px' }} value={newEmpRate} onChange={e => setNewEmpRate(e.target.value)} />
-            {isAdmin || isDeveloper && (<><button className="add-emp-btn" onClick={addNewEmployee}>+ Add Employee</button></>)}
+            {isAdmin && (<><button className="add-emp-btn" onClick={addNewEmployee}>+ Add Employee</button></>)}
           </div>
 
           <div className="month-create-box">
