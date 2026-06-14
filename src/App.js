@@ -41,21 +41,23 @@ function App() {
       ? "http://localhost:5000"
       : "https://rupai-fabric.onrender.com";
 
-  // PASTE YOUR URL HERE
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzYPp_rqBf-mXz30-N4zIZMXvRPJ8_L7mHiH9oC4U-GNjl5Ml2npGGm_uKNrnIXOb6/exec';
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJ74WwPwwscMooeLOA5saRUOlvQGkBPahDJPmlMOzXH9BdoJVtjKUiqdiauecIRpuh/exec";
 
-  // Function to send data to Sheet
   const logToSheet = (user, status) => {
     fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      mode: "no-cors", // MUST KEEP THIS
+      headers: {
+        "Content-Type": "text/plain"
+      },
       body: JSON.stringify({
         username: user.username,
         role: user.role,
         device: user.device || getDeviceDetails(),
-        login_time: new Date().toLocaleTimeString(),
-        status: status // "Login" or "Logout"
+        login_time: new Date().toLocaleString("en-IN", {
+          timeZone: "Asia/Kolkata"
+        }),
+        status: status
       })
     });
   };
