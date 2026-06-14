@@ -2,6 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 
 const Homepage = ({ currentUser }) => {
+  console.log(currentUser)
   return (
     <>
       <ul style={{
@@ -23,6 +24,23 @@ const Homepage = ({ currentUser }) => {
           </NavLink>
         </li>
 
+         <li>
+          <NavLink
+            to="/fabric"
+            style={navStyle("#3F51B5")}
+          >
+            Add Fabric
+          </NavLink>
+        </li>
+        <li>
+          <NavLink
+            to="/yarn"
+            style={navStyle("#334155")}
+          >
+            Add Yarn
+          </NavLink>
+        </li>
+
         <li>
           <NavLink
             to="/production"
@@ -33,27 +51,30 @@ const Homepage = ({ currentUser }) => {
         </li>
 
         {/* Admin Only Links */}
-        {currentUser?.role === "admin" || currentUser?.role === "site_developer" && (
-          <>
-            <li>
-              <NavLink
-                to="/attendancerecord"
-                style={navStyle("#ff9800")}
-              >
-                Attendance Record
-              </NavLink>
-            </li>
+        {(
+          currentUser?.role === "admin" ||
+          currentUser?.role === "site_developer"
+        ) && (
+            <>
+              <li>
+                <NavLink
+                  to="/attendancerecord"
+                  style={navStyle("#ff9800")}
+                >
+                  Attendance Record
+                </NavLink>
+              </li>
 
-            <li>
-              <NavLink
-                to="/productionreport"
-                style={navStyle("#9c27b0")}
-              >
-                Production Report
-              </NavLink>
-            </li>
-          </>
-        )}
+              <li>
+                <NavLink
+                  to="/productionreport"
+                  style={navStyle("#9c27b0")}
+                >
+                  Production Report
+                </NavLink>
+              </li>
+            </>
+          )}
 
         <li>
           <NavLink
@@ -63,17 +84,9 @@ const Homepage = ({ currentUser }) => {
             Admin Report
           </NavLink>
         </li>
-        <li>
-          <NavLink
-            to="/yarn"
-            style={navStyle("#3F51B5")}
-          >
-            Add Yarn Quality
-          </NavLink>
-        </li>
       </ul>
-      <div className="mataji-image" style={{"display": "flex","justifyContent": "center"}}>
-        <img src="./rupai-mataji.jpeg" alt="" style={{'width':"200px","height":"350px"}} />
+      <div className="mataji-image" style={{ "display": "flex", "justifyContent": "center" }}>
+        <img src="./rupai-mataji.jpeg" alt="" style={{ 'width': "200px", "height": "350px" }} />
       </div>
     </>
   );
