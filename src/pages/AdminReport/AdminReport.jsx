@@ -4,6 +4,7 @@ import { NavLink } from "react-router-dom";
 
 const AdminReport = ({ currentUser }) => {
   const isAdmin = currentUser?.role === "admin";
+  const isDeveloper = currentUser?.role === "site_developer";
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, "0");
@@ -455,9 +456,23 @@ const AdminReport = ({ currentUser }) => {
                   <th>Total Loss Meter</th>
                   <th>Total Production Meter</th>
                   {
+                    isDeveloper && (
+                      <>
+                        <th>Total Pick</th>
+                      </>
+                    )
+                  }
+                  {
                     isAdmin && (
                       <>
                         <th>Pick Charge Per Unit</th>
+                      </>
+                    )
+                  }
+                  {
+                    isDeveloper && (
+                      <>
+                        <th>Pick Charge</th>
                       </>
                     )
                   }
@@ -489,11 +504,25 @@ const AdminReport = ({ currentUser }) => {
                         {formatWithSign(row.total_lost_meter)}
                       </td>
                       <td>{row.total_production_meter}</td>
+                      {
+                        isDeveloper && (
+                          <>
+                            <td>{(row.total_pick).toFixed(2)}</td>
+                          </>
+                        )
+                      }
                       {isAdmin && (
                         <>
                           <td>{row.pick_charge_per_unit}</td>
                         </>
                       )}
+                      {
+                        isDeveloper && (
+                          <>
+                            <td>{row.pick_charge}</td>
+                          </>
+                        )
+                      }
                     </tr>
                   ))
                 ) : (
@@ -528,11 +557,25 @@ const AdminReport = ({ currentUser }) => {
                   <td>
                     AVG: {avgProduction} <br />TOTAL: {totalProduction}
                   </td>
+                  {
+                    isDeveloper && (
+                      <>
+                        <td>AVG: {avgTotalPick} <br />TOTAL: {totalPick}</td>
+                      </>
+                    )
+                  }
                   {currentUser?.role == "admin" && (
                     <>
                       <td>{avgPickChargePerUnit}</td>
                     </>
                   )}
+                  {
+                    isDeveloper && (
+                      <>
+                        <td>{avgPickCharge}</td>
+                      </>
+                    )
+                  }
                 </tr>
               </tfoot>
             </table>

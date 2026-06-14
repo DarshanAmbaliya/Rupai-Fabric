@@ -30,6 +30,7 @@ const currentMonthIdx = today.getMonth();
 
 export default function AttendancePage({ currentUser }) {
   const isAdmin = currentUser?.role === 'admin';
+  const isDeveloper = currentUser?.role === 'site_developer';
   // Default now uses current month & year
   const [displayDate, setDisplayDate] = useState({
     year: currentYear,
@@ -286,7 +287,7 @@ export default function AttendancePage({ currentUser }) {
           <div className="add-emp-box">
             <input placeholder="New Employee Name" value={newEmpName} onChange={e => setNewEmpName(e.target.value)} />
             <input type="number" placeholder="Rate" style={{ width: '80px' }} value={newEmpRate} onChange={e => setNewEmpRate(e.target.value)} />
-            {isAdmin && (<><button className="add-emp-btn" onClick={addNewEmployee}>+ Add Employee</button></>)}
+            {isAdmin || isDeveloper && (<><button className="add-emp-btn" onClick={addNewEmployee}>+ Add Employee</button></>)}
           </div>
 
           <div className="month-create-box">

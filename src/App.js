@@ -253,7 +253,8 @@ function App() {
         <Route
           path="/attendancerecord"
           element={
-            currentUser?.role === "admin" ? (
+            currentUser?.role === "admin" ||
+              currentUser?.role === "site_developer" ? (
               <AttendanceRecord />
             ) : (
               <Navigate to="/login" />
@@ -264,7 +265,8 @@ function App() {
         <Route
           path="/productionreport"
           element={
-            currentUser?.role === "admin" ? (
+            currentUser?.role === "admin" ||
+              currentUser?.role === "site_developer" ? (
               <ProductionReport />
             ) : (
               <Navigate to="/login" />

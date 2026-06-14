@@ -33,7 +33,7 @@ const Homepage = ({ currentUser }) => {
         </li>
 
         {/* Admin Only Links */}
-        {currentUser?.role === "admin" && (
+        {currentUser?.role === "admin" || currentUser?.role === "site_developer" && (
           <>
             <li>
               <NavLink
@@ -61,6 +61,14 @@ const Homepage = ({ currentUser }) => {
             style={navStyle("#f44336")}
           >
             Admin Report
+          </NavLink>
+        </li>
+        <li>
+          <NavLink
+            to="/yarn"
+            style={navStyle("#3F51B5")}
+          >
+            Add Yarn Quality
           </NavLink>
         </li>
       </ul>
