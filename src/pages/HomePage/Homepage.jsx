@@ -64,6 +64,9 @@ const Homepage = ({ currentUser }) => {
           </NavLink>
         </li>
       </ul>
+      <div className="mataji-image" style={{"display": "flex","justifyContent": "center"}}>
+        <img src="./rupai-mataji.jpeg" alt="" style={{'width':"200px","height":"350px"}} />
+      </div>
     </>
   );
 };
