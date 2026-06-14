@@ -26,6 +26,7 @@ const getDeviceDetails = () => {
 };
 
 function App() {
+  const ACCESS_PIN = "5025";
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [currentUser, setCurrentUser] = useState(null);
   const [error, setError] = useState('');
@@ -36,6 +37,25 @@ function App() {
     setShowPassword(!showPassword);
   };
 
+  const handleRegisterAccess = () => {
+    const pin = prompt("Enter PIN to Create Account");
+
+    if (pin === ACCESS_PIN) {
+      navigate("/register");
+    } else {
+      alert("Invalid PIN");
+    }
+  };
+
+  const handleResetAccess = () => {
+    const pin = prompt("Enter PIN to Reset Password");
+
+    if (pin === ACCESS_PIN) {
+      navigate("/reset-password");
+    } else {
+      alert("Invalid PIN");
+    }
+  };
   const API_BASE_URL =
     window.location.hostname === "localhost"
       ? "http://localhost:5000"
@@ -209,12 +229,34 @@ function App() {
                   {error && <p style={{ color: "red" }}>{error}</p>}
 
                   <p>
-                    <NavLink to="/register">Create Account</NavLink>
+                    <button
+                      type="button"
+                      onClick={handleRegisterAccess}
+                      style={{
+                        border: "none",
+                        background: "none",
+                        color: "#667eea",
+                        cursor: "pointer",
+                        textDecoration: "underline"
+                      }}
+                    >
+                      Create Account
+                    </button>
                   </p>
 
-                  <NavLink to="/reset-password">
+                  <button
+                    type="button"
+                    onClick={handleResetAccess}
+                    style={{
+                      border: "none",
+                      background: "none",
+                      color: "#667eea",
+                      cursor: "pointer",
+                      textDecoration: "underline"
+                    }}
+                  >
                     Forgot Password?
-                  </NavLink>
+                  </button>
                 </div>
               </div>
             )
