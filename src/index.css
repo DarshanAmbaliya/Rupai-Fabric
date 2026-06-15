@@ -8,7 +8,11 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; font-
 .add-emp-btn { background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 .lock-btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
 .lock-btn.locked { background: #94a3b8; }
-
+.hp-bg {
+  background: #facc15; /* yellow */
+  color: #000;
+  font-weight: bold;
+}
 .table-wrapper { background: white; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); }
 .main-table { width: 100%; border-collapse: collapse; }
 .main-table th { text-align: center; background: #f1f5f9; padding: 10px; text-align: left; border-bottom: 2px solid var(--border); }

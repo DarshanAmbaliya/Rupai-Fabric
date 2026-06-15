@@ -152,7 +152,12 @@ export default function AttendancePage({ currentUser }) {
       let updatedEmp = { ...emp, [field]: value };
 
       if (['attendance', 'dailySalary', 'advance'].includes(field)) {
-        const presentCount = updatedEmp.attendance.filter(x => x === "P").length;
+        const presentCount = updatedEmp.attendance.reduce((acc, v) => {
+          if (v === "P") return acc + 1;
+          if (v === "HP") return acc + 0.5;
+          return acc;
+        }, 0);
+
         const absentCount = updatedEmp.attendance.filter(x => x === "A").length;
 
         updatedEmp.totalPresent = presentCount;
@@ -189,23 +194,23 @@ export default function AttendancePage({ currentUser }) {
   const deleteEmployee = async (emp) => {
     const targetId = emp._id || emp.id;
     const targetName = emp.name;
-  
+
     // 1. First verification: Admin Password
     // const password = window.prompt(`To delete ${targetName}, enter Admin Password:`);
     // if (!password) return;
-  
+
     // Verify using your bcrypt hash for '5242MT'
     // const adminHash = '$2b$10$Wi5OE4ZlocW49O/8qDbbgOatoV5Nbn/ug9pTLJohPdkoS53PU5MI2';
     // const isMatch = bcrypt.compareSync(password, adminHash);
-  
+
     // if (!isMatch) {
     //   alert("Incorrect password!");
     //   return;
     // }
-  
+
     // 2. Second verification: Employee Name check
     const confirmName = window.prompt(`Type "${targetName}" to confirm deletion:`);
-    
+
     if (confirmName === targetName) {
       const updatedList = employees.filter(e => (e._id || e.id) !== targetId);
       setEmployees(updatedList);
@@ -219,22 +224,22 @@ export default function AttendancePage({ currentUser }) {
   const removeAdvance = async (emp, advIndex) => {
     const empId = emp._id || emp.id;
     const targetAdv = emp.advance[advIndex];
-    
+
     // Extract date and amount from the advance object
     const advDate = Object.keys(targetAdv)[0];
     const advAmount = Object.values(targetAdv)[0];
-  
+
     // Show prompt asking to type employee name
     const confirmMsg = `Remove Advance of ₹${advAmount} (${advDate}) for ${emp.name}? \n\nType "${emp.name}" to confirm:`;
     const userInput = window.prompt(confirmMsg);
-  
+
     if (userInput === emp.name) {
       const updatedList = employees.map(e => {
         if ((e._id || e.id) !== empId) return e;
-  
+
         const newAdvance = e.advance.filter((_, idx) => idx !== advIndex);
         const totalAdv = newAdvance.reduce((acc, obj) => acc + Number(Object.values(obj)[0]), 0);
-  
+
         return {
           ...e,
           advance: newAdvance,
@@ -242,7 +247,7 @@ export default function AttendancePage({ currentUser }) {
           finalPay: e.totalSalary - totalAdv
         };
       });
-  
+
       setEmployees(updatedList);
       await syncToDB(updatedList);
       alert("Advance removed successfully.");
@@ -330,17 +335,20 @@ export default function AttendancePage({ currentUser }) {
                       style={{ border: 'none', background: 'transparent', fontWeight: 'bold', width: '100%' }}
                     />
                   </td>
-                  {isAdmin && 
-                  <td>
-                    <input
-                      type="number"
-                      className="rate-input"
-                      value={emp.dailySalary}
-                      onChange={e => updateField(emp._id || emp.id, 'dailySalary', Number(e.target.value))}
-                    />
-                  </td>}
+                  {isAdmin &&
+                    <td>
+                      <input
+                        type="number"
+                        className="rate-input"
+                        value={emp.dailySalary}
+                        onChange={e => updateField(emp._id || emp.id, 'dailySalary', Number(e.target.value))}
+                      />
+                    </td>}
                   {emp.attendance.map((v, i) => (
-                    <td key={i} className={`att-cell ${v === "P" ? "p-bg" : v === "A" ? "a-bg" : ""}`}>
+                    <td key={i} className={`att-cell ${v === "P" ? "p-bg" :
+                        v === "HP" ? "hp-bg" :
+                          v === "A" ? "a-bg" : ""
+                      }`}>
                       <select value={v} onChange={e => {
                         const newAtt = [...emp.attendance];
                         newAtt[i] = e.target.value;
@@ -349,6 +357,7 @@ export default function AttendancePage({ currentUser }) {
                         <option value="">-</option>
                         <option value="P">P</option>
                         <option value="A">A</option>
+                        <option value="HP">HP</option>
                       </select>
                     </td>
                   ))}
