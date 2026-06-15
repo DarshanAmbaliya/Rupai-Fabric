@@ -9,7 +9,7 @@ const YarnQuality = () => {
   const API_BASE_URL =
     window.location.hostname === "localhost"
       ? "http://localhost:5000"
-      : "https://rupai-fabric.onrender.com";
+      : "https://rupai-fabric-n9zz.onrender.com";
 
   const API_URL = `${API_BASE_URL}/api/yarns`;
 

@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 const API_BASE_URL =
   window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://rupai-fabric.onrender.com";
+    : "https://rupai-fabric-n9zz.onrender.com";
 
 function Register() {
   const [formData, setFormData] = useState({
