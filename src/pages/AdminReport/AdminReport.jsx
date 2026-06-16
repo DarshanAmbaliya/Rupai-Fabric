@@ -100,6 +100,16 @@ const AdminReport = ({ currentUser }) => {
       // This is your correct average
       const calculatedAvgMainUsed = monthCount > 0 ? (monthTotalMainUsed / monthCount) : 0;
 
+      const monthTotalUnitUsed = filteredForAvg.reduce(
+        (sum, r) => sum + r.mainUsed + r.compUsed,
+        0
+      );
+
+      const avgTotalUnitUsed =
+        monthCount > 0
+          ? monthTotalUnitUsed / monthCount
+          : 0;
+
       // --- STEP 3: FINAL MAP WITH PICK CHARGE FORMULA ---
       const finalData = filteredForAvg.map((row) => {
         const current = row.currentSummary;
@@ -113,9 +123,19 @@ const AdminReport = ({ currentUser }) => {
           : 0;
 
         // Use calculatedAvgMainUsed instead of external variable
-        const pickChargePerUnit = (totalPick > 0)
-          ? (totalUnitUsed / totalPick) * 7.9
-          : 0;
+        const rowTotalUnitUsed =
+          Number(row.mainUsed || 0) +
+          Number(row.compUsed || 0);
+
+        const unitForCalculation =
+          rowTotalUnitUsed > 0
+            ? rowTotalUnitUsed
+            : avgTotalUnitUsed;
+
+        const pickChargePerUnit =
+          totalPick > 0
+            ? (unitForCalculation / totalPick) * 7.9
+            : 0;
 
         return {
           date: row.date,
@@ -473,7 +493,7 @@ const AdminReport = ({ currentUser }) => {
                     )
                   }
                   {
-                    isAdmin && (
+                    (isAdmin || isDeveloper) && (
                       <>
                         <th>Pick Charge Per Unit</th>
                         <th>Pick Charge</th>
@@ -516,7 +536,7 @@ const AdminReport = ({ currentUser }) => {
                           </>
                         )
                       }
-                      {isAdmin && (
+                      {(isAdmin || isDeveloper) && (
                         <>
                           <td>{row.pick_charge_per_unit}</td>
                           <td>{row.pick_charge}</td>
@@ -568,7 +588,7 @@ const AdminReport = ({ currentUser }) => {
                       </>
                     )
                   }
-                  {currentUser?.role == "admin" && (
+                  {(currentUser?.role == "admin" || isDeveloper) && (
                     <>
                       <td>{avgPickChargePerUnit}</td>
                       <td>{avgPickCharge}</td>
