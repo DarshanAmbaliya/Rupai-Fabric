@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import html2canvas from "html2canvas";
 
 const Production = () => {
   const { date } = useParams();
@@ -127,14 +128,14 @@ const Production = () => {
     if (opIdx === 1) return machines.slice(4, 9);   // 5-9
     return machines.slice(9, 14);                   // 10-14
   };
-  
+
   const calculateAvg = (opIdx, field) => {
     const block = getMachineBlock(opIdx);
-  
+
     const values = block
       .map(m => parseFloat(m[field]))
       .filter(v => v > 0);
-  
+
     return values.length
       ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
       : "0.00";
@@ -142,7 +143,7 @@ const Production = () => {
 
   const calculateSum = (opIdx, field) => {
     const block = getMachineBlock(opIdx);
-  
+
     return block
       .reduce((acc, m) => acc + (parseFloat(m[field]) || 0), 0)
       .toFixed(2);
@@ -445,6 +446,32 @@ const Production = () => {
 
   const removeYarnRow = (index) => {
     setSelectedYarns(selectedYarns.filter((_, i) => i !== index));
+  };
+
+  const downloadScreenshot = async () => {
+    const element = document.querySelector(".Production-table");
+
+    if (!element) return;
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 3, // Higher quality
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        windowWidth: document.documentElement.scrollWidth,
+        windowHeight: document.documentElement.scrollHeight
+      });
+
+      const link = document.createElement("a");
+      link.download = `Production-${selectedDate || "report"}.png`;
+      link.href = canvas.toDataURL("image/png", 1.0);
+      link.click();
+    } catch (error) {
+      console.error("Screenshot Error:", error);
+    }
   };
 
   return (
@@ -862,6 +889,20 @@ const Production = () => {
             }}
           >
             Save Production Data
+          </button>
+          <button
+            onClick={downloadScreenshot}
+            style={{
+              padding: "10px 40px",
+              background: "#007bff",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              marginLeft: "15px"
+            }}
+          >
+            Take Screenshot
           </button>
         </div>
       </div>
