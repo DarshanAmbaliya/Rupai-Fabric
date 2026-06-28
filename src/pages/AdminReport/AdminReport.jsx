@@ -532,7 +532,7 @@ const AdminReport = ({ currentUser }) => {
                       {
                         isDeveloper && (
                           <>
-                            <td>{(row.total_pick).toFixed(2)}</td>
+                            <td>{(row.total_pick).toFixed(2)} <br/> ({(row.total_pick / 14).toFixed(2)}) </td>
                           </>
                         )
                       }
