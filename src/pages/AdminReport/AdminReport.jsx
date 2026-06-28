@@ -482,7 +482,7 @@ const AdminReport = ({ currentUser }) => {
                   <th>Compressor Unit</th>
                   <th>Main Unit</th>
                   <th>Total Unit (Compress+main)</th>
-                  <th>Total Machine stop Loss Meter</th>
+                  {/* <th>Total Machine stop Loss Meter</th> */}
                   <th>Total Loss Meter</th>
                   <th>Total Production Meter</th>
                   {
@@ -518,11 +518,11 @@ const AdminReport = ({ currentUser }) => {
                       <td>{Number(row.compressor_meter_used).toFixed(2)}</td>
                       <td>{Number(row.main_meter_used).toFixed(2)}</td>
                       <td>{(Number(row.main_meter_used) + Number(row.compressor_meter_used)).toFixed(2)}</td>
-                      <td style={{
+                      {/* <td style={{
                         color: row.total_machine_stop_loss_meter > 0 ? "#2e7d32" : row.total_machine_stop_loss_meter < 0 ? "red" : "black"
                       }}>
                         {formatWithSign(row.total_machine_stop_loss_meter)}
-                      </td>
+                      </td> */}
                       <td style={{
                         color: row.total_lost_meter > 0 ? "#2e7d32" : row.total_lost_meter < 0 ? "red" : "black"
                       }}>
@@ -568,11 +568,11 @@ const AdminReport = ({ currentUser }) => {
                     <br />
                     TOTAL: {totalUnitUsed.toFixed(2)}
                   </td>
-                  <td style={{
+                  {/* <td style={{
                     color: totalMachineStopLoss > 0 ? "#2e7d32" : totalMachineStopLoss < 0 ? "red" : "black"
                   }}>
                     AVG: {avgMachineStopLoss} <br />TOTAL: {formatWithSign(totalMachineStopLoss)}
-                  </td>
+                  </td> */}
                   <td style={{
                     color: totalLostMeter > 0 ? "#2e7d32" : totalLostMeter < 0 ? "red" : "black"
                   }}>

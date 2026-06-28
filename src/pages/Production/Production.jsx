@@ -13,6 +13,7 @@ const Production = () => {
   });
   const [yarnList, setYarnList] = useState([]); // All available yarns from DB
   const [selectedYarns, setSelectedYarns] = useState([{ yarn_name: "", quantity: "" }]);
+  const [notes, setNotes] = useState("");
 
   /**
  * FIXED API URL LOGIC
@@ -192,17 +193,23 @@ const Production = () => {
           shift,
           average_meter: calculateAvg(i, shift === "Day" ? "dayMeter" : "nightMeter"),
           average_efficiency: calculateAvg(i, shift === "Day" ? "dayEff" : "nightEff"),
-          machine_production: machineBlock.map((m) => ({
-            machineNumber: m.machineNumber,
-            quality: m.quality,
-            reed: m.reed,
-            rpm: m.rpm,
-            bimNumber: m.bimNumber,
-            bimBalance: m.bimBalance,
-            meter: shift === "Day" ? m.dayMeter : m.nightMeter,
-            efficiency: shift === "Day" ? m.dayEff : m.nightEff,
-            pick: m.pick
-          }))
+          machine_production: machineBlock.map((m) => {
+            const meter = Number(shift === "Day" ? m.dayMeter : m.nightMeter) || 0;
+            const pick = Number(m.pick) || 0;
+            const machinePick = meter * pick;
+            return {
+              machineNumber: m.machineNumber,
+              quality: m.quality,
+              reed: m.reed,
+              rpm: m.rpm,
+              bimNumber: m.bimNumber,
+              bimBalance: m.bimBalance,
+              meter: shift === "Day" ? m.dayMeter : m.nightMeter,
+              efficiency: shift === "Day" ? m.dayEff : m.nightEff,
+              pick: m.pick,
+              machinePick
+            }
+          })
         });
       });
     }
@@ -228,14 +235,15 @@ const Production = () => {
               total_lost_meter: grandTotalLost,
               target_production_meter: totalTargetMeter.toFixed(2),
               machine_stop_loss_meter: Number(machineStopLoss.toFixed(2)) - Number(grandTotalLost),
-              yarn: selectedYarns.filter(y => y.yarn_name !== "" && y.quantity !== "")
+              yarn: selectedYarns.filter(y => y.yarn_name !== "" && y.quantity !== ""),
+              notes: notes,
             },
             operator_data: entries
           }
         }
       }
     });
-  }, [machines, operators, selectedDate, footerMeters, selectedYarns]);
+  }, [machines, operators, selectedDate, footerMeters, selectedYarns, notes]);
 
   // Input change handlers
   const handleInputChange = (index, field, value) => {
@@ -280,6 +288,8 @@ const Production = () => {
             mainMeter: existing.summary?.main_meter || "",
             compressorMeter: existing.summary?.compressor_meter || ""
           });
+          setNotes(existing.summary?.notes || "");
+
           if (existing.summary?.yarn && existing.summary.yarn.length > 0) {
             setSelectedYarns(existing.summary.yarn);
           } else {
@@ -325,6 +335,7 @@ const Production = () => {
         } else {
           // OPTIONAL: Reset production meters if date is empty, 
           // but keep Quality/RPM/Reed from the current state.
+          setNotes("");
           setMachines(prev => prev.map(m => ({
             ...m,
             dayMeter: 0,
@@ -873,6 +884,27 @@ const Production = () => {
               + Add Yarn
             </button>
           </div>
+        </div>
+
+        <div style={{
+          marginTop: "30px",
+          textAlign: "center"
+        }}>
+
+          <h3>Production Notes</h3>
+
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Enter production notes..."
+            rows="4"
+            style={{
+              width: "50%",
+              padding: "10px",
+              fontSize: "14px",
+              resize: "vertical"
+            }}
+          />
         </div>
 
         <div style={{ marginTop: "30px", textAlign: "center" }}>

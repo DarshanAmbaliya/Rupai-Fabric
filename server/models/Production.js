@@ -10,7 +10,8 @@ const machineSchema = new mongoose.Schema(
     bimBalance: Number,
     meter: Number,
     efficiency: Number,
-    pick: Number
+    pick: Number,
+    machinePick: Number
   },
   { _id: false }
 );
