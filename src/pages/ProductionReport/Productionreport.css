@@ -165,6 +165,40 @@
   width: 50%;
 }
 
+.yarn-employee-report {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+}
+.yarn-employee-report .yarn-div {
+  width: 50%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  padding: 15px;
+}
+.yarn-employee-report .yarn-div table {
+  width: 100%;
+}
+.yarn-employee-report .yarn-div table td {
+  padding: 5px;
+}
+.yarn-employee-report .employee-report {
+  width: 50%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  padding: 15px;
+}
+.yarn-employee-report .employee-report table {
+  font-size: 14px;
+}
+.yarn-employee-report .employee-report table td {
+  padding: 5px;
+}
+
 @media (max-width: 991px) {
   .production-report-section .filter-controls {
     gap: 15px;
@@ -182,8 +216,58 @@
   .production-report-section .filter-controls .filter-menu input {
     width: 100%;
   }
+  .Production-table {
+    padding: 15px;
+  }
+  .Production-table .container {
+    padding: 0;
+  }
+  .Production-table .scroll-x {
+    overflow-x: auto;
+    width: 100%;
+    position: relative;
+  }
+  .Production-table .scroll-x table {
+    width: "max-content" !important;
+    min-width: "100%";
+  }
+  .Production-table .scroll-x table .sticky {
+    position: sticky;
+    left: 0;
+    background: rgb(242, 242, 242);
+    z-index: 5;
+    min-width: 35px;
+    box-shadow: 10px 0 18px -2px rgba(0, 0, 0, 0.55);
+  }
+  .Production-table .scroll-x table .x-sticky {
+    left: 35px;
+  }
+  .Production-table .scroll-x table tbody tr td:first-child, .Production-table .scroll-x table tbody tr td:nth-child(2) {
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 5;
+    min-width: 35px;
+  }
+  .Production-table .scroll-x table tbody tr td:nth-child(2) {
+    left: 35px;
+  }
   .Production-table .yarn-table {
     width: 100%;
+  }
+  .yarn-employee-report .yarn-div {
+    padding: 15px 0;
+    width: 100%;
+  }
+  .yarn-employee-report .yarn-div table td {
+    padding: 0;
+  }
+  .yarn-employee-report .employee-report {
+    width: 100%;
+    padding: 15px 0;
+  }
+  .yarn-employee-report .employee-report table td {
+    padding: 5px;
   }
 }
 @media (max-width: 575px) {

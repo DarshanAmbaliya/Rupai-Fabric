@@ -220,6 +220,46 @@ $white: #ffffff;
   }
 }
 
+.yarn-employee-report {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+
+  .yarn-div {
+    width: 50%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    padding: 15px;
+
+    table {
+      width: 100%;
+
+      td {
+        padding: 5px;
+      }
+    }
+  }
+
+  .employee-report {
+    width: 50%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    padding: 15px;
+
+    table {
+      font-size: 14px;
+
+      td {
+        padding: 5px;
+      }
+    }
+  }
+}
+
 @media (max-width: 991px) {
   .production-report-section {
     .filter-controls {
@@ -244,8 +284,82 @@ $white: #ffffff;
   }
 
   .Production-table {
+    padding: 15px;
+
+    .container {
+      padding: 0;
+    }
+
+    .scroll-x {
+      overflow-x: auto;
+      width: 100%;
+      position: relative;
+
+      table {
+        width: "max-content" !important;
+        min-width: "100%";
+
+        .sticky {
+          position: sticky;
+          left: 0;
+          background: rgb(242, 242, 242);
+          z-index: 5;
+          min-width: 35px;
+          box-shadow: 10px 0 18px -2px rgba(0, 0, 0, 0.55);
+        }
+
+        .x-sticky {
+          left: 35px;
+        }
+
+        tbody {
+          tr {
+            td {
+
+              &:first-child,
+              &:nth-child(2) {
+                position: sticky;
+                left: 0;
+                background: white;
+                z-index: 5;
+                min-width: 35px;
+              }
+
+              &:nth-child(2) {
+                left: 35px;
+              }
+            }
+          }
+        }
+      }
+    }
+
     .yarn-table {
       width: 100%;
+    }
+  }
+
+  .yarn-employee-report {
+    .yarn-div {
+      padding: 15px 0;
+      width: 100%;
+
+      table {
+        td {
+          padding: 0;
+        }
+      }
+    }
+
+    .employee-report {
+      width: 100%;
+      padding: 15px 0;
+
+      table {
+        td {
+          padding: 5px;
+        }
+      }
     }
   }
 }

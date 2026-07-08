@@ -84,10 +84,10 @@ const Production = () => {
     const fetchEmployees = async () => {
       try {
         const res = await axios.get(`${API_URL}/api/employees`);
-    
+
         const now = new Date();
         const year = now.getFullYear();
-    
+
         const months = [
           "january",
           "february",
@@ -102,11 +102,11 @@ const Production = () => {
           "november",
           "december",
         ];
-    
+
         const month = months[now.getMonth()];
-    
+
         const employeeList = res.data?.[year]?.[month] || [];
-    
+
         setEmployees(employeeList);
       } catch (err) {
         console.error(err);
@@ -437,10 +437,11 @@ const Production = () => {
           setNotes("");
           setMachines(prev => prev.map(m => ({
             ...m,
-            dayMeter: 0,
-            nightMeter: 0,
-            dayEff: 0,
-            nightEff: 0
+            dayMeter: "",
+            nightMeter: "",
+            dayEff: "",
+            nightEff: "",
+            bimBalance: "",
           })));
         }
       } catch (err) {
@@ -584,6 +585,29 @@ const Production = () => {
     }
   };
 
+  const employeeReport = productionData?.[
+    new Date(selectedDate).getFullYear()
+  ]?.[
+    [
+      "january",
+      "february",
+      "march",
+      "april",
+      "may",
+      "june",
+      "july",
+      "august",
+      "september",
+      "october",
+      "november",
+      "december",
+    ][new Date(selectedDate).getMonth()]
+  ]?.[
+    `${String(new Date(selectedDate).getDate()).padStart(2, "0")}-${String(
+      new Date(selectedDate).getMonth() + 1
+    ).padStart(2, "0")}-${new Date(selectedDate).getFullYear()}`
+  ]?.operator_data || [];
+
   return (
     <section className="Production-table" style={{ padding: "20px" }}>
       <div className="container">
@@ -597,377 +621,452 @@ const Production = () => {
           />
         </h2>
 
-        <table border="1" style={{ width: "100%", borderCollapse: "collapse", textAlign: "center", fontSize: "11px" }}>
-          <thead style={{ backgroundColor: "#f2f2f2" }}>
-            <tr>
-              <th rowSpan="2">M/C</th>
-              <th rowSpan="2">Quality</th>
-              <th rowSpan="2">Reed</th>
-              <th rowSpan="2">RPM</th>
-              <th rowSpan="2">BIM Number</th>
-              <th colSpan="2">Meters</th>
-              <th rowSpan="2">BIM Balance</th>
-              <th colSpan="2">Eff %</th>
-              <th colSpan="2">Operator & Avg</th>
-              <th colSpan="2">Loss Meter</th>
-              <th rowSpan="2">Pick</th>
-            </tr>
-            <tr>
-              <th>Day</th>
-              <th>Night</th>
-              <th>Day</th>
-              <th>Night</th>
-              <th>Day Shift</th>
-              <th>Night Shift</th>
-              <th style={{ width: "83px" }}>Day Shift</th>
-              <th style={{ width: "83px" }}>Night Shift</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {machines.map((m, index) => {
-              const opIdx = getOperatorIndex(index);
-
-              const isFirst =
-                index === 0 ||   // Machine 1
-                index === 4 ||   // Machine 5
-                index === 9;     // Machine 10
-
-              const dayLost = calculateLostMeter(m.rpm, m.dayEff, m.pick, m.dayMeter);
-              const nightLost = calculateLostMeter(m.rpm, m.nightEff, m.pick, m.nightMeter);
-
-              return (
-                <tr key={m.machineNumber}>
-                  <td>{m.machineNumber}</td>
-                  <td>
-                    <select
-                      value={m.quality}
-                      onChange={(e) => handleInputChange(index, "quality", e.target.value)}
-                    >
-                      <option value="">Select</option>
-                      {fabricQuality.map((f) => (
-                        <option key={f._id} value={f.fabric_name}>{f.fabric_name}</option>
-                      ))}
-                    </select>
-                  </td>
-                  <td>
-                    <input
-                      value={m.reed}
-                      onChange={(e) => handleInputChange(index, "reed", e.target.value)}
-                      style={{ width: "30px" }}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      value={m.rpm}
-                      onChange={(e) => handleInputChange(index, "rpm", e.target.value)}
-                      style={{ width: "30px" }}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      value={m.bimNumber}
-                      onChange={(e) => handleInputChange(index, "bimNumber", e.target.value)}
-                      style={{ width: "45px" }}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      value={m.dayMeter}
-                      onChange={(e) => handleInputChange(index, "dayMeter", e.target.value)}
-                      style={{ width: "45px" }}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      value={m.nightMeter}
-                      onChange={(e) => handleInputChange(index, "nightMeter", e.target.value)}
-                      style={{ width: "45px" }}
-                    />
-                  </td>
-                  <td style={{
-                    backgroundColor: isLowBim(m.bimBalance) ? "red" : "inherit"
-                  }}
-                  >
-                    <input
-                      type="number"
-                      value={m.bimBalance}
-                      onChange={(e) => handleInputChange(index, "bimBalance", e.target.value)}
-                      style={{
-                        width: "50px",
-                        backgroundColor: isLowBim(m.bimBalance) ? "red" : "inherit",
-                        color: isLowBim(m.bimBalance) ? "white" : "inherit",
-                        fontWeight: isLowBim(m.bimBalance) ? "bold" : "normal"
-                      }}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      value={m.dayEff}
-                      onChange={(e) => handleInputChange(index, "dayEff", e.target.value)}
-                      style={{ width: "35px" }}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      value={m.nightEff}
-                      onChange={(e) => handleInputChange(index, "nightEff", e.target.value)}
-                      style={{ width: "35px" }}
-                    />
-                  </td>
-
-                  <td>
-                    <select
-                      value={m.dayOperator || ""}
-                      onChange={(e) =>
-                        handleOperatorChange(index, "Day", e.target.value)
-                      }
-                      style={{ width: "120px" }}
-                    >
-                      <option value="">Select</option>
-
-                      {Array.isArray(employees) && employees.map((emp) => (
-                        <option
-                          key={emp._id}
-                          value={emp.name}
-                        >
-                          {emp.name}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-
-                  <td>
-                    <select
-                      value={m.nightOperator || ""}
-                      onChange={(e) =>
-                        handleOperatorChange(index, "Night", e.target.value)
-                      }
-                      style={{ width: "120px" }}
-                    >
-                      <option value="">Select</option>
-
-                      {Array.isArray(employees) && employees.map((emp) => (
-                        <option
-                          key={emp._id}
-                          value={emp.name}
-                        >
-                          {emp.name}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-
-                  <td
-                    style={{
-                      fontSize: "13px",
-                      color:
-                        dayLost > 0
-                          ? "green"
-                          : dayLost < 0
-                            ? "red"
-                            : "inherit",
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {formatLostMeter(dayLost)}
-                  </td>
-
-                  <td
-                    style={{
-                      fontSize: "13px",
-                      color:
-                        nightLost > 0
-                          ? "green"
-                          : nightLost < 0
-                            ? "red"
-                            : "inherit",
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {formatLostMeter(nightLost)}
-                  </td>
-
-                  <td>
-                    <input
-                      type="number"
-                      value={m.pick}
-                      onChange={(e) => handleInputChange(index, "pick", e.target.value)}
-                      style={{ width: "40px" }}
-                    />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-
-          <tfoot className="production-tfoot" style={{ backgroundColor: "#eee", fontWeight: "bold" }}>
-            <tr>
-              <td colSpan="3">SHIFT TOTALS</td>
-              <td>{avgTotalRPM}</td>
-              <td></td>
-              <td>{totalDayProd}</td>
-              <td>{totalNightProd}</td>
-              <td style={{ color: "blue" }}>{totalBimBalSum}</td>
-              <td>{avgDayEff}%</td>
-              <td>{avgNightEff}%</td>
-              <td colSpan="2">Total Meter: {totalProdMeter}</td>
-              <td
-                style={{
-                  fontSize: "13px",
-                  color:
-                    totalDayLost > 0
-                      ? "green"
-                      : totalDayLost < 0
-                        ? "red"
-                        : "inherit",
-                }}
-              >
-                Day Loss: {formatLostMeter(totalDayLost)}
-              </td>
-
-              <td
-                style={{
-                  fontSize: "13px",
-                  color:
-                    totalNightLost > 0
-                      ? "green"
-                      : totalNightLost < 0
-                        ? "red"
-                        : "inherit",
-                }}
-              >
-                Night Loss: {formatLostMeter(totalNightLost)}
-              </td>
-              <td>Avg: {avgTotalPick}</td>
-            </tr>
-            <tr>
-              <td colSpan="6" style={{ textAlign: "right" }}>
-                Main Unit :
-              </td>
-              <td colSpan="2">
-                <input
-                  type="number"
-                  value={footerMeters.mainMeter}
-                  onChange={(e) =>
-                    setFooterMeters(prev => ({
-                      ...prev,
-                      mainMeter: e.target.value
-                    }))
-                  }
-                  style={{ width: "100px" }}
-                />
-              </td>
-              <td colSpan="2">
-                Average Effciency: <br /> <hr />
-                {(() => {
-                  const day = parseFloat(avgDayEff) || 0;
-                  const night = parseFloat(avgNightEff) || 0;
-
-                  return day > 0 && night > 0
-                    ? ((day + night) / 2).toFixed(2)
-                    : day > 0
-                      ? day.toFixed(2)
-                      : night > 0
-                        ? night.toFixed(2)
-                        : "0.00";
-                })()}%
-              </td>
-              <td colSpan="1" style={{ textAlign: "right" }}>
-                Compressor Unit :
-              </td>
-              <td colSpan="1">
-                <input
-                  type="number"
-                  value={footerMeters.compressorMeter}
-                  onChange={(e) =>
-                    setFooterMeters(prev => ({
-                      ...prev,
-                      compressorMeter: e.target.value
-                    }))
-                  }
-                  style={{ width: "100px" }}
-                />
-              </td>
-              <td
-                colSpan={3}
-                style={{
-                  textAlign: "center",
-                  fontWeight: "bold",
-                  fontSize: "16px",
-                  color:
-                    grandTotalLost > 0
-                      ? "green"
-                      : grandTotalLost < 0
-                        ? "red"
-                        : "inherit",
-                }}
-              >
-                Total Loss Meter :{" "}
-                {formatLostMeter(grandTotalLost)}
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-
-        {/* YARN SELECTION TABLE */}
-        <div style={{ marginTop: "30px" }}>
-          <h3 style={{ textAlign: "center" }}>Yarn Consumption</h3>
-          <table border="1" style={{ margin: "0 auto", borderCollapse: "collapse", textAlign: "center" }} className="yarn-table">
+        <div
+          className="scroll-x"
+        >
+          <table border="1" style={{ width: "100%", borderCollapse: "collapse", textAlign: "center", fontSize: "11px" }}>
             <thead style={{ backgroundColor: "#f2f2f2" }}>
               <tr>
-                <th>Yarn Name</th>
-                <th>Quantity (Bags/Kgs)</th>
-                <th>Action</th>
+                <th rowSpan="2" className="sticky">M/C</th>
+                <th rowSpan="2" className="sticky x-sticky">Quality</th>
+                <th rowSpan="2">Reed</th>
+                <th rowSpan="2">RPM</th>
+                <th rowSpan="2">BIM Number</th>
+                <th colSpan="2">Meters</th>
+                <th rowSpan="2">BIM Balance</th>
+                <th colSpan="2">Eff %</th>
+                <th colSpan="2">Operator & Avg</th>
+                <th colSpan="2">Loss Meter</th>
+                <th rowSpan="2">Pick</th>
+              </tr>
+              <tr>
+                <th>Day</th>
+                <th>Night</th>
+                <th>Day</th>
+                <th>Night</th>
+                <th>Day Shift</th>
+                <th>Night Shift</th>
+                <th style={{ width: "83px" }}>Day Shift</th>
+                <th style={{ width: "83px" }}>Night Shift</th>
               </tr>
             </thead>
+
             <tbody>
-              {selectedYarns.map((y, idx) => (
-                <tr key={idx}>
-                  <td>
-                    <select
-                      value={y.yarn_name}
-                      onChange={(e) => handleYarnChange(idx, "yarn_name", e.target.value)}
-                      style={{ width: "90%" }}
+              {machines.map((m, index) => {
+                const opIdx = getOperatorIndex(index);
+
+                const isFirst =
+                  index === 0 ||   // Machine 1
+                  index === 4 ||   // Machine 5
+                  index === 9;     // Machine 10
+
+                const dayLost = calculateLostMeter(m.rpm, m.dayEff, m.pick, m.dayMeter);
+                const nightLost = calculateLostMeter(m.rpm, m.nightEff, m.pick, m.nightMeter);
+
+                return (
+                  <tr key={m.machineNumber}>
+                    <td>{m.machineNumber}</td>
+                    <td>
+                      <select
+                        value={m.quality}
+                        onChange={(e) => handleInputChange(index, "quality", e.target.value)}
+                      >
+                        <option value="">Select</option>
+                        {fabricQuality.map((f) => (
+                          <option key={f._id} value={f.fabric_name}>{f.fabric_name}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        value={m.reed}
+                        onChange={(e) => handleInputChange(index, "reed", e.target.value)}
+                        style={{ width: "30px" }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        value={m.rpm}
+                        onChange={(e) => handleInputChange(index, "rpm", e.target.value)}
+                        style={{ width: "30px" }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value={m.bimNumber}
+                        onChange={(e) => handleInputChange(index, "bimNumber", e.target.value)}
+                        style={{ width: "45px" }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value={m.dayMeter}
+                        onChange={(e) => handleInputChange(index, "dayMeter", e.target.value)}
+                        style={{ width: "45px" }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value={m.nightMeter}
+                        onChange={(e) => handleInputChange(index, "nightMeter", e.target.value)}
+                        style={{ width: "45px" }}
+                      />
+                    </td>
+                    <td style={{
+                      backgroundColor: isLowBim(m.bimBalance) ? "red" : "inherit"
+                    }}
                     >
-                      <option value="">Select Yarn</option>
-                      {yarnList.map((item) => (
-                        <option key={item._id} value={item.yarn_name}>
-                          {item.yarn_name}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      value={y.quantity}
-                      onChange={(e) => handleYarnChange(idx, "quantity", e.target.value)}
-                      placeholder="Qty"
-                      style={{ width: "80px" }}
-                    />
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => removeYarnRow(idx)}
-                      style={{ color: "red", border: "none", background: "none", cursor: "pointer", border: "1px solid", padding: "0px 3px" }}
+                      <input
+                        type="number"
+                        value={m.bimBalance}
+                        onChange={(e) => handleInputChange(index, "bimBalance", e.target.value)}
+                        style={{
+                          width: "50px",
+                          backgroundColor: isLowBim(m.bimBalance) ? "red" : "inherit",
+                          color: isLowBim(m.bimBalance) ? "white" : "inherit",
+                          fontWeight: isLowBim(m.bimBalance) ? "bold" : "normal"
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value={m.dayEff}
+                        onChange={(e) => handleInputChange(index, "dayEff", e.target.value)}
+                        style={{ width: "35px" }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value={m.nightEff}
+                        onChange={(e) => handleInputChange(index, "nightEff", e.target.value)}
+                        style={{ width: "35px" }}
+                      />
+                    </td>
+
+                    <td>
+                      <select
+                        value={m.dayOperator || ""}
+                        onChange={(e) =>
+                          handleOperatorChange(index, "Day", e.target.value)
+                        }
+                        style={{ width: "120px" }}
+                      >
+                        <option value="">Select</option>
+
+                        {Array.isArray(employees) && employees.map((emp) => (
+                          <option
+                            key={emp._id}
+                            value={emp.name}
+                          >
+                            {emp.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+
+                    <td>
+                      <select
+                        value={m.nightOperator || ""}
+                        onChange={(e) =>
+                          handleOperatorChange(index, "Night", e.target.value)
+                        }
+                        style={{ width: "120px" }}
+                      >
+                        <option value="">Select</option>
+
+                        {Array.isArray(employees) && employees.map((emp) => (
+                          <option
+                            key={emp._id}
+                            value={emp.name}
+                          >
+                            {emp.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+
+                    <td
+                      style={{
+                        fontSize: "13px",
+                        color:
+                          dayLost > 0
+                            ? "green"
+                            : dayLost < 0
+                              ? "red"
+                              : "inherit",
+                        fontWeight: 'bold'
+                      }}
                     >
-                      ✖
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      {formatLostMeter(dayLost)}
+                    </td>
+
+                    <td
+                      style={{
+                        fontSize: "13px",
+                        color:
+                          nightLost > 0
+                            ? "green"
+                            : nightLost < 0
+                              ? "red"
+                              : "inherit",
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      {formatLostMeter(nightLost)}
+                    </td>
+
+                    <td>
+                      <input
+                        type="number"
+                        value={m.pick}
+                        onChange={(e) => handleInputChange(index, "pick", e.target.value)}
+                        style={{ width: "40px" }}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
+
+            <tfoot className="production-tfoot" style={{ backgroundColor: "#eee", fontWeight: "bold" }}>
+              <tr>
+                <td colSpan="3">SHIFT TOTALS</td>
+                <td>{avgTotalRPM}</td>
+                <td></td>
+                <td>{totalDayProd}</td>
+                <td>{totalNightProd}</td>
+                <td style={{ color: "blue" }}>{totalBimBalSum}</td>
+                <td>{avgDayEff}%</td>
+                <td>{avgNightEff}%</td>
+                <td colSpan="2">Total Meter: {totalProdMeter}</td>
+                <td
+                  style={{
+                    fontSize: "13px",
+                    color:
+                      totalDayLost > 0
+                        ? "green"
+                        : totalDayLost < 0
+                          ? "red"
+                          : "inherit",
+                  }}
+                >
+                  Day Loss: {formatLostMeter(totalDayLost)}
+                </td>
+
+                <td
+                  style={{
+                    fontSize: "13px",
+                    color:
+                      totalNightLost > 0
+                        ? "green"
+                        : totalNightLost < 0
+                          ? "red"
+                          : "inherit",
+                  }}
+                >
+                  Night Loss: {formatLostMeter(totalNightLost)}
+                </td>
+                <td>Avg: {avgTotalPick}</td>
+              </tr>
+              <tr>
+                <td colSpan="6" style={{ textAlign: "right" }}>
+                  Main Unit :
+                </td>
+                <td colSpan="2">
+                  <input
+                    type="number"
+                    value={footerMeters.mainMeter}
+                    onChange={(e) =>
+                      setFooterMeters(prev => ({
+                        ...prev,
+                        mainMeter: e.target.value
+                      }))
+                    }
+                    style={{ width: "100px" }}
+                  />
+                </td>
+                <td colSpan="2">
+                  Average Effciency: <br /> <hr />
+                  {(() => {
+                    const day = parseFloat(avgDayEff) || 0;
+                    const night = parseFloat(avgNightEff) || 0;
+
+                    return day > 0 && night > 0
+                      ? ((day + night) / 2).toFixed(2)
+                      : day > 0
+                        ? day.toFixed(2)
+                        : night > 0
+                          ? night.toFixed(2)
+                          : "0.00";
+                  })()}%
+                </td>
+                <td colSpan="1" style={{ textAlign: "right" }}>
+                  Compressor Unit :
+                </td>
+                <td colSpan="1">
+                  <input
+                    type="number"
+                    value={footerMeters.compressorMeter}
+                    onChange={(e) =>
+                      setFooterMeters(prev => ({
+                        ...prev,
+                        compressorMeter: e.target.value
+                      }))
+                    }
+                    style={{ width: "100px" }}
+                  />
+                </td>
+                <td
+                  colSpan={3}
+                  style={{
+                    textAlign: "center",
+                    fontWeight: "bold",
+                    fontSize: "16px",
+                    color:
+                      grandTotalLost > 0
+                        ? "green"
+                        : grandTotalLost < 0
+                          ? "red"
+                          : "inherit",
+                  }}
+                >
+                  Total Loss Meter :{" "}
+                  {formatLostMeter(grandTotalLost)}
+                </td>
+              </tr>
+            </tfoot>
           </table>
-          <div style={{ textAlign: "center", marginTop: "10px" }}>
-            <button onClick={addYarnRow} style={{ padding: "5px 15px", cursor: "pointer" }}>
-              + Add Yarn
-            </button>
+        </div>
+
+        {/* yarn and employee report table */}
+        <div className="yarn-employee-report">
+          {/* YARN SELECTION TABLE */}
+          <div className="yarn-div">
+            <h3 style={{ textAlign: "center" }}>Yarn Consumption</h3>
+            <table border="1" style={{ margin: "0 auto", borderCollapse: "collapse", textAlign: "center" }} className="yarn-table">
+              <thead style={{ backgroundColor: "#f2f2f2" }}>
+                <tr>
+                  <th>Yarn Name</th>
+                  <th>Quantity (Bags/Kgs)</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedYarns.map((y, idx) => (
+                  <tr key={idx}>
+                    <td>
+                      <select
+                        value={y.yarn_name}
+                        onChange={(e) => handleYarnChange(idx, "yarn_name", e.target.value)}
+                        style={{ width: "90%" }}
+                      >
+                        <option value="">Select Yarn</option>
+                        {yarnList.map((item) => (
+                          <option key={item._id} value={item.yarn_name}>
+                            {item.yarn_name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value={y.quantity}
+                        onChange={(e) => handleYarnChange(idx, "quantity", e.target.value)}
+                        placeholder="Qty"
+                        style={{ width: "80px" }}
+                      />
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => removeYarnRow(idx)}
+                        style={{ color: "red", border: "none", background: "none", cursor: "pointer", border: "1px solid", padding: "0px 3px" }}
+                      >
+                        ✖
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div style={{ textAlign: "center", marginTop: "10px" }}>
+              <button onClick={addYarnRow} style={{ padding: "5px 15px", cursor: "pointer" }}>
+                + Add Yarn
+              </button>
+            </div>
+          </div>
+
+          {/* employee-report */}
+          <div className="employee-report">
+            <h3 style={{ textAlign: "center" }}>Employee Report</h3>
+
+            <table
+              border="1"
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                textAlign: "center",
+              }}
+            >
+              <thead style={{ background: "#f2f2f2" }}>
+                <tr>
+                  <th>Employee</th>
+                  <th>Shift</th>
+                  <th>Machines</th>
+                  <th>Avg Efficiency</th>
+                  <th>Avg Production</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {employeeReport
+                  .filter((emp) => emp.operator_name)
+                  .map((emp, index) => {
+                    const validMeterMachines = emp.machine_production.filter(
+                      (m) => Number(m.meter) > 0
+                    );
+
+                    const validEffMachines = emp.machine_production.filter(
+                      (m) => Number(m.efficiency) > 0
+                    );
+
+                    const machineCount = emp.machine_production.length;
+
+                    const totalMeter = validMeterMachines.reduce(
+                      (sum, m) => sum + Number(m.meter),
+                      0
+                    );
+
+                    const totalEff = validEffMachines.reduce(
+                      (sum, m) => sum + Number(m.efficiency),
+                      0
+                    );
+
+                    const avgMeter = validMeterMachines.length
+                      ? (totalMeter / validMeterMachines.length).toFixed(2)
+                      : "0.00";
+
+                    const avgEff = validEffMachines.length
+                      ? (totalEff / validEffMachines.length).toFixed(2)
+                      : "0.00";
+
+                    return (
+                      <tr key={index}>
+                        <td>{emp.operator_name}</td>
+                        <td>{emp.shift}</td>
+                        <td>{machineCount}</td>
+                        <td>{avgEff}%</td>
+                        <td>{avgMeter}</td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
           </div>
         </div>
 
