@@ -15,6 +15,13 @@ const Production = () => {
   const [selectedYarns, setSelectedYarns] = useState([{ yarn_name: "", quantity: "" }]);
   const [employees, setEmployees] = useState([]);
   const [notes, setNotes] = useState("");
+  const [meterUsage, setMeterUsage] = useState({
+    previousMain: 0,
+    previousCompressor: 0,
+    mainUsed: 0,
+    compressorUsed: 0,
+    totalUsed: 0,
+  });
 
   /**
  * FIXED API URL LOGIC
@@ -350,6 +357,101 @@ const Production = () => {
     }
   };
 
+  const calculateCurrentMeterUsage = async () => {
+    try {
+      if (!selectedDate) return;
+
+      const current = new Date(selectedDate);
+
+      const prevMonth = new Date(
+        current.getFullYear(),
+        current.getMonth() - 1,
+        1
+      );
+
+      const currentMonth =
+        `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
+
+      const previousMonth =
+        `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, "0")}`;
+
+      const [currentRes, prevRes] = await Promise.all([
+        axios.get(`${API_URL}/api/production/month?month=${currentMonth}`),
+        axios.get(`${API_URL}/api/production/month?month=${previousMonth}`)
+      ]);
+
+      const combined = {
+        ...(prevRes.data || {}),
+        ...(currentRes.data || {})
+      };
+
+      const dates = Object.keys(combined).sort((a, b) => {
+
+        const [d1, m1, y1] = a.split("-");
+        const [d2, m2, y2] = b.split("-");
+
+        return new Date(y1, m1 - 1, d1) - new Date(y2, m2 - 1, d2);
+
+      });
+
+      const selectedDateStr =
+        `${String(current.getDate()).padStart(2, "0")}-${String(current.getMonth() + 1).padStart(2, "0")}-${current.getFullYear()}`;
+
+      const index = dates.indexOf(selectedDateStr);
+
+      if (index === -1) {
+        return;
+      }
+
+      const prevDate = dates[index - 1];
+
+      if (!prevDate) {
+
+        setMeterUsage({
+          previousMain: 0,
+          previousCompressor: 0,
+          mainUsed: 0,
+          compressorUsed: 0,
+          totalUsed: 0
+        });
+
+        return;
+      }
+
+      const currentSummary = combined[selectedDateStr].summary;
+      const previousSummary = combined[prevDate].summary;
+
+      const mainUsed =
+        Number(currentSummary.main_meter || 0)
+        -
+        Number(previousSummary.main_meter || 0);
+
+      const compressorUsed =
+        Number(currentSummary.compressor_meter || 0)
+        -
+        Number(previousSummary.compressor_meter || 0);
+
+      setMeterUsage({
+
+        previousMain: Number(previousSummary.main_meter || 0),
+
+        previousCompressor: Number(previousSummary.compressor_meter || 0),
+
+        mainUsed,
+
+        compressorUsed,
+
+        totalUsed: mainUsed + compressorUsed
+
+      });
+
+    } catch (err) {
+
+      console.log(err);
+
+    }
+  };
+
   useEffect(() => {
     const fetchExistingData = async () => {
       try {
@@ -431,6 +533,7 @@ const Production = () => {
             return machineInfo;
           });
           setMachines(updatedMachines);
+          calculateCurrentMeterUsage();
         } else {
           // OPTIONAL: Reset production meters if date is empty, 
           // but keep Quality/RPM/Reed from the current state.
@@ -443,6 +546,7 @@ const Production = () => {
             nightEff: "",
             bimBalance: "",
           })));
+          calculateCurrentMeterUsage();
         }
       } catch (err) {
         console.error("Error syncing data:", err);
@@ -451,6 +555,28 @@ const Production = () => {
 
     fetchExistingData();
   }, [selectedDate]);
+
+  useEffect(() => {
+
+    const mainUsed =
+      Number(footerMeters.mainMeter || 0) -
+      Number(meterUsage.previousMain || 0);
+
+    const compUsed =
+      Number(footerMeters.compressorMeter || 0) -
+      Number(meterUsage.previousCompressor || 0);
+
+    setMeterUsage(prev => ({
+      ...prev,
+      mainUsed,
+      compressorUsed: compUsed,
+      totalUsed: mainUsed + compUsed
+    }));
+
+  }, [
+    footerMeters.mainMeter,
+    footerMeters.compressorMeter
+  ]);
 
   useEffect(() => {
     const loadLatestDate = async () => {
@@ -561,27 +687,41 @@ const Production = () => {
 
   const downloadScreenshot = async () => {
     const element = document.querySelector(".Production-table");
-
-    if (!element) return;
-
+    const scrollDiv = document.querySelector(".scroll-x");
+  
+    if (!element || !scrollDiv) return;
+  
+    // Save original styles
+    const originalOverflow = scrollDiv.style.overflowX;
+    const originalWidth = scrollDiv.style.width;
+  
     try {
+      // Expand the scrollable div
+      scrollDiv.style.overflowX = "visible";
+      scrollDiv.style.width = `${scrollDiv.scrollWidth}px`;
+  
       const canvas = await html2canvas(element, {
-        scale: 3, // Higher quality
+        scale: 3,
         useCORS: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-        scrollX: 0,
-        scrollY: -window.scrollY,
-        windowWidth: document.documentElement.scrollWidth,
-        windowHeight: document.documentElement.scrollHeight
+        backgroundColor: "#fff",
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
       });
-
+  
+      // Restore styles
+      scrollDiv.style.overflowX = originalOverflow;
+      scrollDiv.style.width = originalWidth;
+  
       const link = document.createElement("a");
-      link.download = `Production-${selectedDate || "report"}.png`;
-      link.href = canvas.toDataURL("image/png", 1.0);
+      link.download = "Production.png";
+      link.href = canvas.toDataURL("image/png");
       link.click();
-    } catch (error) {
-      console.error("Screenshot Error:", error);
+    } catch (err) {
+      scrollDiv.style.overflowX = originalOverflow;
+      scrollDiv.style.width = originalWidth;
+      console.error(err);
     }
   };
 
@@ -939,6 +1079,12 @@ const Production = () => {
                   {formatLostMeter(grandTotalLost)}
                 </td>
               </tr>
+              <tr>
+                <td colSpan="16" style={{ fontSize: "16px", padding: "8px" }}>
+                  Total Unit :
+                  {meterUsage.totalUsed.toFixed(2)}
+                </td>
+              </tr>
             </tfoot>
           </table>
         </div>
@@ -1020,6 +1166,7 @@ const Production = () => {
                   <th>Machines</th>
                   <th>Avg Efficiency</th>
                   <th>Avg Production</th>
+                  <th>Total Production</th>
                 </tr>
               </thead>
 
@@ -1062,6 +1209,7 @@ const Production = () => {
                         <td>{machineCount}</td>
                         <td>{avgEff}%</td>
                         <td>{avgMeter}</td>
+                        <td>{totalMeter}</td>
                       </tr>
                     );
                   })}
