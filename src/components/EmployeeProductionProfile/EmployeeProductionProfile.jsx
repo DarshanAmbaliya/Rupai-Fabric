@@ -1,0 +1,368 @@
+import React, { useEffect, useState, useMemo, useRef } from "react";
+import Chart from "react-apexcharts";
+import axios from "axios";
+import "./EmployeeProductionProfile.css";
+
+const EmployeeProductionProfile = ({ employeeId, onClose }) => {
+  const currentMonthStr = new Date().toISOString().slice(0, 7); // YYYY-MM
+
+  // --- STATE MANAGEMENT ---
+  const [selectedOperatorId, setSelectedOperatorId] = useState(employeeId);
+  const [operatorsList, setOperatorsList] = useState([]);
+  const [startDate, setStartDate] = useState(currentMonthStr + "-01");
+  const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10));
+  const [loading, setLoading] = useState(false);
+  const [rawMonthlyData, setRawMonthlyData] = useState({});
+  const [avatarImage, setAvatarImage] = useState(null); // Base64 image string
+
+  // Chart Metric Selector State ("meters" | "machines" | "picks" | "efficiency")
+  const [selectedChartMetric, setSelectedChartMetric] = useState("meters");
+
+  const fileInputRef = useRef(null);
+  const API_BASE_URL = window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://rupai-fabric-n9zz.onrender.com";
+
+  // Helper: Find all YYYY-MM strings within a selection range
+  const getMonthsInRange = (start, end) => {
+    const months = [];
+    let current = new Date(start);
+    const stop = new Date(end);
+    while (current <= stop) {
+      months.push(current.toISOString().slice(0, 7));
+      current.setMonth(current.getMonth() + 1);
+    }
+    return [...new Set(months)];
+  };
+
+  // --- FETCH DATA ---
+  useEffect(() => {
+    if (!startDate || !endDate) return;
+
+    const fetchRangeData = async () => {
+      setLoading(true);
+      try {
+        const monthsNeeded = getMonthsInRange(startDate, endDate);
+        const promises = monthsNeeded.map(m =>
+          axios.get(`${API_BASE_URL}/api/production/month?month=${m}`)
+        );
+
+        const responses = await Promise.all(promises);
+        const combinedData = {};
+        const globalOperatorsMap = new Map();
+
+        responses.forEach(res => {
+          if (res.data) {
+            Object.assign(combinedData, res.data);
+            Object.values(res.data).forEach((day) => {
+              if (day.operator_data) {
+                day.operator_data.forEach((op) => {
+                  if (op.operator_id && op.operator_name) {
+                    globalOperatorsMap.set(op.operator_id, op.operator_name.trim());
+                  }
+                });
+              }
+            });
+          }
+        });
+
+        setRawMonthlyData(combinedData);
+        setOperatorsList(Array.from(globalOperatorsMap.entries()).map(([id, name]) => ({ id, name })));
+      } catch (err) {
+        console.error("Error fetching analytics profile details:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRangeData();
+  }, [startDate, endDate, API_BASE_URL]);
+
+  // --- PERSISTENT AVATAR IMAGES PER OPERATOR ---
+  useEffect(() => {
+    const savedImage = localStorage.getItem(`avatar_${selectedOperatorId}`);
+    setAvatarImage(savedImage || null);
+  }, [selectedOperatorId]);
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        setAvatarImage(base64String);
+        localStorage.setItem(`avatar_${selectedOperatorId}`, base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileSelect = () => {
+    fileInputRef.current.click();
+  };
+
+  // Find Selected Operator's Name for Display Profile
+  const currentOperatorName = useMemo(() => {
+    const op = operatorsList.find(o => o.id === selectedOperatorId);
+    return op ? op.name : "Operator";
+  }, [operatorsList, selectedOperatorId]);
+
+  // --- PROCESS AND AGGREGATE CALCULATIONS ---
+  const stats = useMemo(() => {
+    let totalMeters = 0;
+    let totalMachinesCountAllDays = 0;
+    let totalEfficiencySum = 0;
+    let totalMachinePickSum = 0;
+    let totalMachinesMeasured = 0;
+    let totalDaysActive = 0;
+
+    const chartDates = [];
+    const chartMeters = [];
+    const chartMachinesRun = [];
+    const chartPicks = [];
+    const chartEfficiency = [];
+
+    const startTs = new Date(startDate).setHours(0, 0, 0, 0);
+    const endTs = new Date(endDate).setHours(23, 59, 59, 999);
+
+    const sortedDays = Object.keys(rawMonthlyData).sort((a, b) => {
+      const [d1, m1, y1] = a.split("-");
+      const [d2, m2, y2] = b.split("-");
+      return new Date(`${y1}-${m1}-${d1}`) - new Date(`${y2}-${m2}-${d2}`);
+    });
+
+    sortedDays.forEach((dateStr) => {
+      const [d, m, y] = dateStr.split("-");
+      const dayTimestamp = new Date(`${y}-${m}-${d}`).getTime();
+
+      if (dayTimestamp >= startTs && dayTimestamp <= endTs) {
+        const dayPayload = rawMonthlyData[dateStr];
+        if (!dayPayload || !dayPayload.operator_data) return;
+
+        const operatorObj = dayPayload.operator_data.find(op => op.operator_id === selectedOperatorId);
+
+        if (operatorObj && operatorObj.machine_production) {
+          const validMachines = operatorObj.machine_production.filter(m => {
+            if (!m || Object.keys(m).length === 0) return false;
+            return !((m.meter || 0) === 0 && (m.efficiency || 0) === 0);
+          });
+
+          if (validMachines.length > 0) {
+            totalDaysActive++;
+            totalMachinesCountAllDays += validMachines.length;
+
+            let dailyMeterSum = 0;
+            let dailyEffSum = 0;
+            let dailyPickSum = 0;
+
+            validMachines.forEach(mach => {
+              dailyMeterSum += (mach.meter || 0);
+              dailyEffSum += (mach.efficiency || 0);
+              dailyPickSum += (mach.machinePick || 0);
+              totalMachinesMeasured++;
+            });
+
+            totalMeters += dailyMeterSum;
+            totalEfficiencySum += dailyEffSum;
+            totalMachinePickSum += dailyPickSum;
+
+            chartDates.push(dateStr);
+            chartMeters.push(dailyMeterSum);
+            chartMachinesRun.push(validMachines.length);
+            chartPicks.push(parseFloat((dailyPickSum / validMachines.length).toFixed(2)));
+            chartEfficiency.push(parseFloat((dailyEffSum / validMachines.length).toFixed(2)));
+          }
+        }
+      }
+    });
+
+    let targetedSeriesName = "Production Meter";
+    let targetedChartData = chartMeters;
+    let yAxisUnit = "Meters";
+
+    if (selectedChartMetric === "machines") {
+      targetedSeriesName = "Machines Run";
+      targetedChartData = chartMachinesRun;
+      yAxisUnit = "Count";
+    } else if (selectedChartMetric === "picks") {
+      targetedSeriesName = "Avg Machine Pick";
+      targetedChartData = chartPicks;
+      yAxisUnit = "Picks";
+    } else if (selectedChartMetric === "efficiency") {
+      targetedSeriesName = "Avg Efficiency";
+      targetedChartData = chartEfficiency;
+      yAxisUnit = "%";
+    }
+
+    return {
+      totalMeters,
+      totalMachinePickSum, // Added to return hook metrics
+      avgMachinesPerDay: totalDaysActive > 0 ? (totalMachinesCountAllDays / totalDaysActive).toFixed(2) : 0,
+      avgMeterPerMachine: totalMachinesMeasured > 0 ? (totalMeters / totalMachinesMeasured).toFixed(2) : 0,
+      avgPickPerMachine: totalMachinesMeasured > 0 ? (totalMachinePickSum / totalMachinesMeasured).toFixed(2) : 0,
+      avgEfficiency: totalMachinesMeasured > 0 ? (totalEfficiencySum / totalMachinesMeasured).toFixed(2) : 0,
+      chartOptions: {
+        chart: { id: "employee-performance-metrics-chart", toolbar: { show: true } },
+        xaxis: { categories: chartDates, title: { text: "Dates" } },
+        yaxis: { title: { text: yAxisUnit } },
+        stroke: { curve: "smooth", width: 3 },
+        colors: ["#4f46e5"],
+        dataLabels: { enabled: true }
+      },
+      chartSeries: [
+        { name: targetedSeriesName, data: targetedChartData }
+      ],
+      hasChartData: chartDates.length > 0
+    };
+  }, [rawMonthlyData, startDate, endDate, selectedOperatorId, selectedChartMetric]);
+
+  return (
+    <div className="employee-modal-overlay">
+      <div className="employee-modal">
+        {/* Fixed Header Elements */}
+        <div className="modal-header">
+          <h3>Employee Production Profile</h3>
+          <button className="close-btn" onClick={onClose}>&times;</button>
+        </div>
+
+        {/* Fixed Configuration Controllers Dashboard */}
+        <div className="modal-controls-bar">
+          <div className="control-group">
+            <label><strong>Select Operator: </strong></label>
+            <select
+              value={selectedOperatorId}
+              onChange={(e) => setSelectedOperatorId(e.target.value)}
+              className="modal-select"
+            >
+              {operatorsList.map(op => (
+                <option key={op.id} value={op.id}>{op.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="control-group">
+            <label><strong>From: </strong></label>
+            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          </div>
+          <div className="control-group">
+            <label><strong>To: </strong></label>
+            <input type="date" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)} />
+          </div>
+        </div>
+
+        {/* NEW SCROLLABLE BODY CONTAINER WRAPPER */}
+        <div className="modal-scrollable-body">
+          {loading ? (
+            <div className="loading-state">Syncing operational data calculations...</div>
+          ) : (
+            <div className="main-box">
+              {/* Left Box: Operator Photo & Performance Aggregations summary */}
+              <div className="box left-box">
+                <div className="avatar-wrapper">
+                  <div className="profile-avatar-container" onClick={triggerFileSelect} title="Click to change photo">
+                    {avatarImage ? (
+                      <img src={avatarImage} alt="Operator Profile" className="profile-photo-img" />
+                    ) : (
+                      <div className="profile-avatar-initial">
+                        {currentOperatorName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="avatar-overlay">
+                      <span>Change Photo</span>
+                    </div>
+                  </div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleAvatarChange}
+                    accept="image/*"
+                    style={{ display: "none" }}
+                  />
+                  <h4 className="profile-name">{currentOperatorName}</h4>
+                  <span className="profile-badge">Operator</span>
+                </div>
+
+                {/* NEW METRICS GRID LAYOUT STRUCTURE */}
+                <div className="metrics-grid">
+                  <div className="metric-card-wrapper full-width-card">
+                    <div className="metric-header">
+                      <span className="metric-title">Total Production</span>
+                      <span className="metric-trend-indicator">Live</span>
+                    </div>
+                    <div className="metric-hero-value">
+                      {stats.totalMeters.toLocaleString()} <small>Mtr</small>
+                    </div>
+                  </div>
+
+                  {/* Added Total Machine Pick Sum Metric Card */}
+                  <div className="metric-card-wrapper">
+                    <span className="metric-title">Total Machine Pick</span>
+                    <div className="metric-sub-value">
+                      {stats.totalMachinePickSum.toLocaleString()}
+                    </div>
+                  </div>
+
+                  <div className="metric-card-wrapper">
+                    <span className="metric-title">Avg Meter/Machine</span>
+                    <div className="metric-sub-value">
+                      {stats.avgMeterPerMachine} <small>Mtr</small>
+                    </div>
+                  </div>
+
+                  <div className="metric-card-wrapper">
+                    <span className="metric-title">Avg Machines Run</span>
+                    <div className="metric-sub-value">  {stats.avgMachinesPerDay} <small>Active</small></div>
+                  </div>
+
+                  <div className="metric-card-wrapper">
+                    <span className="metric-title">Avg Machine Pick</span>
+                    <div className="metric-sub-value">{stats.avgPickPerMachine}</div>
+                  </div>
+
+                  <div className="metric-card-wrapper priority-border">
+                    <span className="metric-title">Avg Efficiency</span>
+                    <div className="metric-sub-value accent-text">
+                      {stats.avgEfficiency}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Box: Dynamic Chart Analytics View */}
+              <div className="box right-box">
+                <div className="chart-header-row">
+                  <h4>Production Timeline Trend</h4>
+                  <div className="metric-selector">
+                    <label><strong>View Metric: </strong></label>
+                    <select
+                      value={selectedChartMetric}
+                      onChange={(e) => setSelectedChartMetric(e.target.value)}
+                      className="metric-dropdown"
+                    >
+                      <option value="meters">Production Meter</option>
+                      <option value="machines">Machines Run / Day</option>
+                      <option value="picks">Machine Pick</option>
+                      <option value="efficiency">Avg Efficiency (%)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {stats.hasChartData ? (
+                  <Chart
+                    options={stats.chartOptions}
+                    series={stats.chartSeries}
+                    type="line"
+                    height="320"
+                  />
+                ) : (
+                  <div className="no-data-msg">No entries found matching this date range.</div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EmployeeProductionProfile;

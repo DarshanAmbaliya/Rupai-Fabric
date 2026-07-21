@@ -23,32 +23,6 @@ const AdminReport = ({ currentUser }) => {
 
   const API_URL = `${API_BASE_URL}/api/production/`;
 
-  /* -------------------- HELPER: CALCULATE METER USAGE -------------------- */
-  const calculateMeterUsage = (rows) => {
-    return rows.map((current, index) => {
-      const prev = rows[index - 1];
-
-      // If it's the first entry in the list, we don't have a previous day to subtract
-      if (!prev) {
-        return {
-          ...current,
-          main_meter_used: 0,
-          compressor_meter_used: 0,
-        };
-      }
-
-      // Calculation: (Current Meter - Previous Meter) * 30
-      const mainUsed = (Number(current.main_meter || 0) - Number(prev.main_meter || 0));
-      const compUsed = (Number(current.compressor_meter || 0) - Number(prev.compressor_meter || 0));
-
-      return {
-        ...current,
-        main_meter_used: mainUsed,
-        compressor_meter_used: compUsed,
-      };
-    });
-  };
-
   /* -------------------- FETCH DATA -------------------- */
   useEffect(() => {
     fetchData();
@@ -56,49 +30,33 @@ const AdminReport = ({ currentUser }) => {
 
   const fetchData = async () => {
     try {
-      const prevMonthDate = new Date(year, parseInt(month) - 2, 1);
-      const prevYear = prevMonthDate.getFullYear();
-      const prevMonthStr = (prevMonthDate.getMonth() + 1).toString().padStart(2, "0");
+      // Direct call for the selected month only
+      const res = await axios.get(`${API_URL}month?month=${year}-${month}`);
+      const monthData = res.data || {};
 
-      const [currentRes, prevRes] = await Promise.all([
-        axios.get(`${API_URL}month?month=${year}-${month}`),
-        axios.get(`${API_URL}month?month=${prevYear}-${prevMonthStr}`)
-      ]);
-
-      const combinedData = { ...(prevRes.data || {}), ...(currentRes.data || {}) };
-
-      const sortedDates = Object.keys(combinedData).sort((a, b) => {
+      const sortedDates = Object.keys(monthData).sort((a, b) => {
         const [d1, m1, y1] = a.split("-");
         const [d2, m2, y2] = b.split("-");
         return new Date(y1, m1 - 1, d1) - new Date(y2, m2 - 1, d2);
       });
 
-      // --- STEP 1: CALCULATE DAILY USAGE ---
-      let rawProcessedRows = sortedDates.map((date, index) => {
-        const current = combinedData[date].summary || {};
-        const prevDate = sortedDates[index - 1];
-        const prev = prevDate ? combinedData[prevDate].summary : null;
-
-        const mainMeter = Number(current.main_meter || 0);
-        const prevMainMeter = Number(prev?.main_meter || 0);
-        const compMeter = Number(current.compressor_meter || 0);
-        const prevCompMeter = Number(prev?.compressor_meter || 0);
+      // --- STEP 1: READ DIRECT METER VALUES ---
+      const rawProcessedRows = sortedDates.map((date) => {
+        const current = monthData[date]?.summary || {};
 
         return {
           date,
-          currentSummary: current, // store this for the next step
-          mainUsed: prev ? (mainMeter - prevMainMeter) : 0,
-          compUsed: prev ? (compMeter - prevCompMeter) : 0
+          currentSummary: current,
+          mainUsed: Number(current.main_meter || 0),
+          compUsed: Number(current.compressor_meter || 0),
         };
       });
 
-      // --- STEP 2: GET AVERAGE FOR THE SELECTED MONTH ONLY ---
-      const filteredForAvg = rawProcessedRows.filter(row => row.date.includes(`-${month}-${year}`));
+      // --- STEP 2: GET AVERAGE FOR THE SELECTED MONTH ---
+      const filteredForAvg = rawProcessedRows.filter((row) =>
+        row.date.includes(`-${month}-${year}`)
+      );
       const monthCount = filteredForAvg.length;
-      const monthTotalMainUsed = filteredForAvg.reduce((sum, r) => sum + r.mainUsed, 0);
-
-      // This is your correct average
-      const calculatedAvgMainUsed = monthCount > 0 ? (monthTotalMainUsed / monthCount) : 0;
 
       const monthTotalUnitUsed = filteredForAvg.reduce(
         (sum, r) => sum + r.mainUsed + r.compUsed,
@@ -106,9 +64,7 @@ const AdminReport = ({ currentUser }) => {
       );
 
       const avgTotalUnitUsed =
-        monthCount > 0
-          ? monthTotalUnitUsed / monthCount
-          : 0;
+        monthCount > 0 ? monthTotalUnitUsed / monthCount : 0;
 
       // --- STEP 3: FINAL MAP WITH PICK CHARGE FORMULA ---
       const finalData = filteredForAvg.map((row) => {
@@ -117,25 +73,20 @@ const AdminReport = ({ currentUser }) => {
         const totalProduction = Number(current.total_production_meter || 0);
         const totalPick = Number(current.total_pick || 0);
 
-        // 15.3 - 5/(30 days)
-        const pickChargeFixedCost = (avgPick > 0 && totalProduction > 0)
-          ? (34333 / (avgPick * totalProduction))
-          : 0;
+        // Pick charge fixed cost calculation
+        const pickChargeFixedCost =
+          avgPick > 0 && totalProduction > 0
+            ? 34333 / (avgPick * totalProduction)
+            : 0;
 
-        // Use calculatedAvgMainUsed instead of external variable
         const rowTotalUnitUsed =
-          Number(row.mainUsed || 0) +
-          Number(row.compUsed || 0);
+          Number(row.mainUsed || 0) + Number(row.compUsed || 0);
 
         const unitForCalculation =
-          rowTotalUnitUsed > 0
-            ? rowTotalUnitUsed
-            : avgTotalUnitUsed;
+          rowTotalUnitUsed > 0 ? rowTotalUnitUsed : avgTotalUnitUsed;
 
         const pickChargePerUnit =
-          totalPick > 0
-            ? (unitForCalculation / totalPick) * 7.9
-            : 0;
+          totalPick > 0 ? (unitForCalculation / totalPick) * 7.9 : 0;
 
         return {
           date: row.date,
@@ -145,7 +96,6 @@ const AdminReport = ({ currentUser }) => {
             const night = parseFloat(current.total_average_night_efficiency) || 0;
 
             let avg = 0;
-
             if (day > 0 && night > 0) {
               avg = (day + night) / 2;
             } else if (day > 0) {
@@ -169,7 +119,6 @@ const AdminReport = ({ currentUser }) => {
       });
 
       setTableData(finalData);
-
     } catch (error) {
       console.error("Error fetching data:", error);
       setTableData([]);
@@ -193,107 +142,77 @@ const AdminReport = ({ currentUser }) => {
   const avgRPM =
     count > 0
       ? (
-        filteredData.reduce((sum, r) => sum + Number(r.avg_rpm || 0), 0) /
-        count
-      ).toFixed(2)
+          filteredData.reduce((sum, r) => sum + Number(r.avg_rpm || 0), 0) /
+          count
+        ).toFixed(2)
       : 0;
 
   const avgEfficiencyTotal =
     count > 0
       ? (
-        filteredData.reduce((sum, r) => sum + Number(r.avg_efficiency || 0), 0) /
-        count
-      ).toFixed(2)
+          filteredData.reduce((sum, r) => sum + Number(r.avg_efficiency || 0), 0) /
+          count
+        ).toFixed(2)
       : 0;
 
   const avgPick =
     count > 0
       ? (
-        filteredData.reduce((sum, r) => sum + Number(r.avg_pick || 0), 0) /
-        count
-      ).toFixed(2)
+          filteredData.reduce((sum, r) => sum + Number(r.avg_pick || 0), 0) /
+          count
+        ).toFixed(2)
       : 0;
 
-  const totalCompressor =
-    filteredData.reduce(
-      (sum, r) => sum + Number(r.compressor_meter || 0),
-      0
-    );
-
-  const totalMainMeter =
-    filteredData.reduce((sum, r) => sum + Number(r.main_meter || 0), 0);
-
-  const totalProduction =
-    filteredData.reduce(
-      (sum, r) => sum + Number(r.total_production_meter || 0),
-      0
-    );
+  const totalProduction = filteredData.reduce(
+    (sum, r) => sum + Number(r.total_production_meter || 0),
+    0
+  );
 
   const avgProduction = count > 0 ? (totalProduction / count).toFixed(2) : 0;
 
   const avgPickCharge =
     count > 0
       ? (
-        filteredData.reduce((sum, r) => sum + Number(r.pick_charge || 0), 0) /
-        count
-      ).toFixed(4)
+          filteredData.reduce((sum, r) => sum + Number(r.pick_charge || 0), 0) /
+          count
+        ).toFixed(4)
       : 0;
 
-  const totalMainUsed =
-    filteredData.reduce(
-      (sum, r) => sum + Number(r.main_meter_used || 0),
-      0
-    );
+  const totalMainUsed = filteredData.reduce(
+    (sum, r) => sum + Number(r.main_meter_used || 0),
+    0
+  );
 
-  const totalCompUsed =
-    filteredData.reduce(
-      (sum, r) => sum + Number(r.compressor_meter_used || 0),
-      0
-    );
+  const totalCompUsed = filteredData.reduce(
+    (sum, r) => sum + Number(r.compressor_meter_used || 0),
+    0
+  );
 
-  const avgMainUsed =
-    count > 0
-      ? (totalMainUsed / count).toFixed(2)
-      : 0;
-
-  const avgCompUsed =
-    count > 0
-      ? (totalCompUsed / count).toFixed(2)
-      : 0;
+  const avgMainUsed = count > 0 ? (totalMainUsed / count).toFixed(2) : 0;
+  const avgCompUsed = count > 0 ? (totalCompUsed / count).toFixed(2) : 0;
 
   // Total Unit = Main + Compressor
   const totalUnitUsed = totalMainUsed + totalCompUsed;
 
   // Average Total Unit
-  const avgTotalUnitUsed =
-    count > 0
-      ? (totalUnitUsed / count).toFixed(2)
-      : 0;
+  const avgTotalUnitUsed = count > 0 ? (totalUnitUsed / count).toFixed(2) : 0;
 
   const totalLostMeter = filteredData.reduce((sum, r) => sum + Number(r.total_lost_meter || 0), 0);
   const formatWithSign = (num) => {
     const value = Number(num);
     if (value > 0) return `+${value.toFixed(2)}`;
-    if (value < 0) return `${value.toFixed(2)}`; // Minus is automatic
+    if (value < 0) return `${value.toFixed(2)}`;
     return "0.00";
   };
 
   const avgLostMeter = count > 0 ? (totalLostMeter / count).toFixed(2) : 0;
 
-  const totalMachineStopLoss = filteredData.reduce(
-    (sum, r) => sum + Number(r.total_machine_stop_loss_meter || 0),
-    0
-  );
-
-  const avgMachineStopLoss =
-    count > 0 ? (totalMachineStopLoss / count).toFixed(2) : 0;
-
   const avgPickChargePerUnit =
     count > 0
       ? (
-        filteredData.reduce((sum, r) => sum + Number(r.pick_charge_per_unit || 0), 0) /
-        count
-      ).toFixed(4)
+          filteredData.reduce((sum, r) => sum + Number(r.pick_charge_per_unit || 0), 0) /
+          count
+        ).toFixed(4)
       : 0;
 
   const totalPick = filteredData.reduce(
@@ -301,10 +220,7 @@ const AdminReport = ({ currentUser }) => {
     0
   );
 
-  const avgTotalPick =
-    count > 0
-      ? (totalPick / count).toFixed(2)
-      : 0;
+  const avgTotalPick = count > 0 ? (totalPick / count).toFixed(2) : 0;
 
   const handlePrint = () => {
     window.print();
@@ -314,6 +230,7 @@ const AdminReport = ({ currentUser }) => {
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
+
   /* -------------------- UI -------------------- */
   return (
     <section className="production-report-section">
@@ -322,7 +239,7 @@ const AdminReport = ({ currentUser }) => {
           @media print {
             @page {
               size: portrait;
-              margin: 8mm; /* Smaller margins to give more space to the table */
+              margin: 8mm;
             }
             .production-report-section .filter-controls {display: none !important;}
             .title {
@@ -335,7 +252,7 @@ const AdminReport = ({ currentUser }) => {
               print-color-adjust: exact;
               font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
-            /* Hide UI elements */.subtitle, .print-btn, button ,.app-header{
+            .subtitle, .print-btn, button, .app-header {
               display: none !important;
             }
             .title {
@@ -350,19 +267,18 @@ const AdminReport = ({ currentUser }) => {
             table {
               width: 100% !important;
               border-collapse: collapse !important;
-              table-layout: auto; /* Allow columns to shrink to content */,
+              table-layout: auto;
             }
             th, td {
-              border: 0.5pt solid #000 !important; /* Thinner lines look cleaner in Portrait */
-              padding: 4px 2px !important; /* Very tight padding for narrow columns */
-              font-size: 8pt !important; /* Smaller font to ensure 9 columns fit */
+              border: 0.5pt solid #000 !important;
+              padding: 4px 2px !important;
+              font-size: 8pt !important;
               text-align: center !important;
             }
             thead {
               display: table-header-group;
               background-color: #f0f0f0 !important;
             }
-            /* Ensure the Lost Meter colors print clearly */
             .loss-pos { color: #d32f2f !important; font-weight: bold; }
             .loss-neg { color: #2e7d32 !important; font-weight: bold; }
           }
@@ -379,12 +295,15 @@ const AdminReport = ({ currentUser }) => {
                 : ""}
             </p>
           </h2>
-          <h2 className="subtitle">Admin Production Report
+          <h2 className="subtitle">
+            Admin Production Report
             <button
               className="print-btn"
               onClick={handlePrint}
               style={{ padding: "8px 16px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-            >Print Report</button>
+            >
+              Print Report
+            </button>
           </h2>
 
           <div className="filter-controls" style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
@@ -416,10 +335,7 @@ const AdminReport = ({ currentUser }) => {
                   setEndDate("");
                 }}
               >
-                {[
-                  "January", "February", "March", "April", "May", "June",
-                  "July", "August", "September", "October", "November", "December"
-                ].map((m, idx) => (
+                {monthNames.map((m, idx) => (
                   <option key={m} value={(idx + 1).toString().padStart(2, '0')}>{m}</option>
                 ))}
               </select>
@@ -451,7 +367,8 @@ const AdminReport = ({ currentUser }) => {
 
             {/* Clear Filters */}
             {(startDate || endDate) && (
-              <button style={{ cursor: 'pointer' }}
+              <button
+                style={{ cursor: 'pointer' }}
                 onClick={() => {
                   setStartDate("");
                   setEndDate("");
@@ -482,24 +399,15 @@ const AdminReport = ({ currentUser }) => {
                   <th>Compressor Unit</th>
                   <th>Main Unit</th>
                   <th>Total Unit (Compress+main)</th>
-                  {/* <th>Total Machine stop Loss Meter</th> */}
                   <th>Total Loss Meter</th>
                   <th>Total Production Meter</th>
-                  {
-                    isDeveloper && (
-                      <>
-                        <th>Total Pick</th>
-                      </>
-                    )
-                  }
-                  {
-                    (isAdmin || isDeveloper) && (
-                      <>
-                        <th>Pick Charge Per Unit</th>
-                        <th>Pick Charge</th>
-                      </>
-                    )
-                  }
+                  {isDeveloper && <th>Total Pick</th>}
+                  {(isAdmin || isDeveloper) && (
+                    <>
+                      <th>Pick Charge Per Unit</th>
+                      <th>Pick Charge</th>
+                    </>
+                  )}
                 </tr>
               </thead>
 
@@ -518,24 +426,15 @@ const AdminReport = ({ currentUser }) => {
                       <td>{Number(row.compressor_meter_used).toFixed(2)}</td>
                       <td>{Number(row.main_meter_used).toFixed(2)}</td>
                       <td>{(Number(row.main_meter_used) + Number(row.compressor_meter_used)).toFixed(2)}</td>
-                      {/* <td style={{
-                        color: row.total_machine_stop_loss_meter > 0 ? "#2e7d32" : row.total_machine_stop_loss_meter < 0 ? "red" : "black"
-                      }}>
-                        {formatWithSign(row.total_machine_stop_loss_meter)}
-                      </td> */}
                       <td style={{
                         color: row.total_lost_meter > 0 ? "#2e7d32" : row.total_lost_meter < 0 ? "red" : "black"
                       }}>
                         {formatWithSign(row.total_lost_meter)}
                       </td>
                       <td>{row.total_production_meter}</td>
-                      {
-                        isDeveloper && (
-                          <>
-                            <td>{(row.total_pick).toFixed(2)} <br/> ({(row.total_pick / 14).toFixed(2)}) </td>
-                          </>
-                        )
-                      }
+                      {isDeveloper && (
+                        <td>{(row.total_pick).toFixed(2)} <br/> ({(row.total_pick / 14).toFixed(2)})</td>
+                      )}
                       {(isAdmin || isDeveloper) && (
                         <>
                           <td>{row.pick_charge_per_unit}</td>
@@ -568,11 +467,6 @@ const AdminReport = ({ currentUser }) => {
                     <br />
                     TOTAL: {totalUnitUsed.toFixed(2)}
                   </td>
-                  {/* <td style={{
-                    color: totalMachineStopLoss > 0 ? "#2e7d32" : totalMachineStopLoss < 0 ? "red" : "black"
-                  }}>
-                    AVG: {avgMachineStopLoss} <br />TOTAL: {formatWithSign(totalMachineStopLoss)}
-                  </td> */}
                   <td style={{
                     color: totalLostMeter > 0 ? "#2e7d32" : totalLostMeter < 0 ? "red" : "black"
                   }}>
@@ -581,14 +475,10 @@ const AdminReport = ({ currentUser }) => {
                   <td>
                     AVG: {avgProduction} <br />TOTAL: {totalProduction}
                   </td>
-                  {
-                    isDeveloper && (
-                      <>
-                        <td>AVG: {avgTotalPick} <br />TOTAL: {totalPick}</td>
-                      </>
-                    )
-                  }
-                  {(currentUser?.role == "admin" || isDeveloper) && (
+                  {isDeveloper && (
+                    <td>AVG: {avgTotalPick} <br />TOTAL: {totalPick}</td>
+                  )}
+                  {(currentUser?.role === "admin" || isDeveloper) && (
                     <>
                       <td>{avgPickChargePerUnit}</td>
                       <td>{avgPickCharge}</td>
