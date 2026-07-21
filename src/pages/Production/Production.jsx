@@ -1085,7 +1085,8 @@ const Production = () => {
               <tr>
                 <td colSpan="16" style={{ fontSize: "16px", padding: "8px" }}>
                   Total Unit :
-                  {meterUsage.totalUsed.toFixed(2)}
+                  {Number(footerMeters.mainMeter) + Number(footerMeters.compressorMeter)}
+                  {/* {meterUsage.totalUsed.toFixed(2)} */}
                 </td>
               </tr>
             </tfoot>
