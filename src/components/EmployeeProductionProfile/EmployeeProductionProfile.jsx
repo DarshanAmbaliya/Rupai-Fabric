@@ -21,7 +21,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
   const fileInputRef = useRef(null);
   const API_BASE_URL = window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://mahakali-textiles.onrender.com";
+    : "https://rupai-fabric-n9zz.onrender.com";
 
   // Helper: Find all YYYY-MM strings within a selection range
   const getMonthsInRange = (start, end) => {
