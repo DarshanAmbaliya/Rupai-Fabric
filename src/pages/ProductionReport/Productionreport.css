@@ -100,6 +100,14 @@
   border-top-right-radius: 8px;
   background-color: rgb(34.9516129032, 49.25, 63.5483870968);
 }
+.production-report-section .production-data table thead tr th.operator-day {
+  background-color: #69dbdb;
+  color: white;
+}
+.production-report-section .production-data table thead tr th.operator-night {
+  background-color: #3c2a19;
+  color: white;
+}
 .production-report-section .production-data table thead tr th small {
   display: block;
   margin-top: 4px;

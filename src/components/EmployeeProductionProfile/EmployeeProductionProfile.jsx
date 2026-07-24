@@ -21,7 +21,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
   const fileInputRef = useRef(null);
   const API_BASE_URL = window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://rupai-fabric-n9zz.onrender.com";
+    : "https://mahakali-textiles.onrender.com";
 
   // Helper: Find all YYYY-MM strings within a selection range
   const getMonthsInRange = (start, end) => {
@@ -115,12 +115,14 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
     let totalMachinePickSum = 0;
     let totalMachinesMeasured = 0;
     let totalDaysActive = 0;
+    let totalLostMeter = 0;
 
     const chartDates = [];
     const chartMeters = [];
     const chartMachinesRun = [];
     const chartPicks = [];
     const chartEfficiency = [];
+    const chartLostMeter = [];
 
     const startTs = new Date(startDate).setHours(0, 0, 0, 0);
     const endTs = new Date(endDate).setHours(23, 59, 59, 999);
@@ -154,11 +156,29 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
             let dailyMeterSum = 0;
             let dailyEffSum = 0;
             let dailyPickSum = 0;
+            let dailyLostMeter = 0;
 
-            validMachines.forEach(mach => {
-              dailyMeterSum += (mach.meter || 0);
-              dailyEffSum += (mach.efficiency || 0);
+            validMachines.forEach((mach) => {
+              const meter = Number(mach.meter || 0);
+              const rpm = Number(mach.rpm || 0);
+              const efficiency = Number(mach.efficiency || 0);
+              const pick = Number(mach.pick || 0);
+
+              dailyMeterSum += meter;
+              dailyEffSum += efficiency;
               dailyPickSum += (mach.machinePick || 0);
+
+              if (rpm > 0 && pick > 0) {
+                const actualProduction =
+                  (rpm * 12 * 60 * (efficiency / 100)) /
+                  (39.37 * pick);
+
+                const lostMeter = meter - actualProduction;
+
+                dailyLostMeter += lostMeter;
+                totalLostMeter += lostMeter;
+              }
+
               totalMachinesMeasured++;
             });
 
@@ -171,6 +191,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
             chartMachinesRun.push(validMachines.length);
             chartPicks.push(parseFloat((dailyPickSum / validMachines.length).toFixed(2)));
             chartEfficiency.push(parseFloat((dailyEffSum / validMachines.length).toFixed(2)));
+            chartLostMeter.push(parseFloat(dailyLostMeter.toFixed(2)));
           }
         }
       }
@@ -192,10 +213,15 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
       targetedSeriesName = "Avg Efficiency";
       targetedChartData = chartEfficiency;
       yAxisUnit = "%";
+    } else if (selectedChartMetric === "lostmeter") {
+      targetedSeriesName = "Lost Production Meter";
+      targetedChartData = chartLostMeter;
+      yAxisUnit = "Meters";
     }
 
     return {
       totalMeters,
+      totalLostMeter,
       totalMachinePickSum, // Added to return hook metrics
       avgMachinesPerDay: totalDaysActive > 0 ? (totalMachinesCountAllDays / totalDaysActive).toFixed(2) : 0,
       avgMeterPerMachine: totalMachinesMeasured > 0 ? (totalMeters / totalMachinesMeasured).toFixed(2) : 0,
@@ -206,7 +232,11 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
         xaxis: { categories: chartDates, title: { text: "Dates" } },
         yaxis: { title: { text: yAxisUnit } },
         stroke: { curve: "smooth", width: 3 },
-        colors: ["#4f46e5"],
+        colors: [
+          selectedChartMetric === "lostmeter"
+            ? "#dc2626"
+            : "#4f46e5"
+        ],
         dataLabels: { enabled: true }
       },
       chartSeries: [
@@ -256,7 +286,36 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
           ) : (
             <div className="main-box">
               {/* Left Box: Operator Photo & Performance Aggregations summary */}
-              <div className="box left-box">
+              <div className="box left-box print-section">
+                <div className="print-header">
+                  <h2>Employee Production Profile</h2>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <div className="print-date">
+                      <strong>Period :</strong>{" "}
+                      {new Date(startDate).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                      {"  "}to{"  "}
+                      {new Date(endDate).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </div>
+
+                    <div className="print-date">
+                      <strong>Printed On :</strong>{" "}
+                      {new Date().toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </div>
+                  </div>
+                  <hr />
+                </div>
                 <div className="avatar-wrapper">
                   <div className="profile-avatar-container" onClick={triggerFileSelect} title="Click to change photo">
                     {avatarImage ? (
@@ -324,6 +383,23 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
                       {stats.avgEfficiency}%
                     </div>
                   </div>
+
+                  <div className="metric-card-wrapper red-border">
+                    <span className="metric-title">Total Lost Meter</span>
+
+                    <div
+                      className="metric-sub-value"
+                      style={{
+                        color: "#dc2626",
+                        fontWeight: "700"
+                      }}
+                    >
+                      {stats.totalLostMeter < 0
+                        ? `- ${Math.abs(stats.totalLostMeter).toFixed(2)}`
+                        : stats.totalLostMeter.toFixed(2)}
+                      <small> Mtr</small>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -342,6 +418,9 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
                       <option value="machines">Machines Run / Day</option>
                       <option value="picks">Machine Pick</option>
                       <option value="efficiency">Avg Efficiency (%)</option>
+                      <option value="lostmeter">
+                        Lost Production Meter
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -359,6 +438,12 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
               </div>
             </div>
           )}
+        </div>
+
+        <div className="print-button">
+          <button className="print-btn" onClick={() => window.print()}>
+            🖨 Print
+          </button>
         </div>
       </div>
     </div>

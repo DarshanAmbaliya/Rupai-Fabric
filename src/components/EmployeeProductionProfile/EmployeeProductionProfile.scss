@@ -15,6 +15,37 @@
   box-sizing: border-box;
   animation: overlayFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
+  .print-header {
+    display: none;
+    width: 100%;
+
+    h2 {
+      font-size: 24px;
+      margin: 0;
+    }
+  }
+
+  .print-button {
+    display: flex;
+    justify-content: center;
+
+    .print-btn {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 10px 40px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: .3s;
+    }
+
+    .print-btn:hover {
+      background: #1d4ed8;
+    }
+  }
+
   .employee-modal {
     background: #ffffff;
     padding: 25px;
@@ -41,8 +72,8 @@
   }
 
   /* ==========================================================================
-       2. INTERACTIVE HEADER ROW
-       ========================================================================== */
+         2. INTERACTIVE HEADER ROW
+         ========================================================================== */
   .modal-header {
     display: flex;
     justify-content: space-between;
@@ -95,8 +126,8 @@
   }
 
   /* ==========================================================================
-       3. SEGMENTED FILTER & CONTROLS CONTROL STRIP
-       ========================================================================== */
+         3. SEGMENTED FILTER & CONTROLS CONTROL STRIP
+         ========================================================================== */
   .modal-controls-bar {
     display: flex;
     flex-wrap: wrap;
@@ -161,8 +192,8 @@
   }
 
   /* ==========================================================================
-       4. INNER BODY SCROLL BAR TRACK
-       ========================================================================== */
+         4. INNER BODY SCROLL BAR TRACK
+         ========================================================================== */
   .modal-scrollable-body {
     flex: 1;
     overflow-y: auto;
@@ -189,8 +220,8 @@
   }
 
   /* ==========================================================================
-       5. CONTAINER GRID ALIGNMENT
-       ========================================================================== */
+         5. CONTAINER GRID ALIGNMENT
+         ========================================================================== */
   .main-box {
     display: flex;
     gap: 32px;
@@ -208,11 +239,11 @@
   }
 
   /* ==========================================================================
-       6. PREMIUM METRICS SIDEBAR (LEFT BOX)
-       ========================================================================== */
+         6. PREMIUM METRICS SIDEBAR (LEFT BOX)
+         ========================================================================== */
   /* ==========================================================================
-     PREMIUM SIDEBAR WORKER INTERFACE (LEFT BOX NO-SCROLL EXPANSION PATCH)
-     ========================================================================== */
+       PREMIUM SIDEBAR WORKER INTERFACE (LEFT BOX NO-SCROLL EXPANSION PATCH)
+       ========================================================================== */
   .left-box {
     flex: 0 0 380px;
     width: 380px;
@@ -381,6 +412,25 @@
         &.priority-border {
           border-left: 4px solid #10b981;
           background: linear-gradient(90deg, rgba(16, 185, 129, 0.01) 0%, #ffffff 100%);
+
+          span {
+            color: #10b981;
+          }
+        }
+
+        &.red-border {
+          border-left: 4px solid #dc2626;
+          background: linear-gradient(90deg, rgba(16, 185, 129, 0.01) 0%, #ffffff 100%);
+
+          span {
+            color: #dc2626;
+          }
+
+          .metric-sub-value {
+            small {
+              color: #dc2626;
+            }
+          }
         }
 
         .metric-header {
@@ -449,8 +499,8 @@
   }
 
   /* ==========================================================================
-       7. ANALYTICS DECK VIEWPORT (RIGHT BOX)
-       ========================================================================== */
+         7. ANALYTICS DECK VIEWPORT (RIGHT BOX)
+         ========================================================================== */
   .right-box {
     flex: 1;
     padding: 36px;
@@ -518,8 +568,8 @@
   }
 
   /* ==========================================================================
-       8. LUXURY SYSTEM LOADERS & DATA FEEDBACK COUNTERS
-       ========================================================================== */
+         8. LUXURY SYSTEM LOADERS & DATA FEEDBACK COUNTERS
+         ========================================================================== */
   .loading-state,
   .no-data-msg {
     display: flex;
@@ -554,10 +604,11 @@
   }
 }
 
+/* ---------------- PRINT ---------------- */
 
 /* ==========================================================================
-     9. FLUID MEDIA COMPRESSION RESPONSIVE QUERIES
-     ========================================================================== */
+       9. FLUID MEDIA COMPRESSION RESPONSIVE QUERIES
+       ========================================================================== */
 @media (max-width: 1024px) {
   .employee-modal-overlay {
     .employee-modal {
@@ -640,8 +691,8 @@
 }
 
 /* ==========================================================================
-     10. CINEMATIC INTERPOLATION KEYFRAMES
-     ========================================================================== */
+       10. CINEMATIC INTERPOLATION KEYFRAMES
+       ========================================================================== */
 @keyframes overlayFadeIn {
   from {
     opacity: 0;
@@ -667,5 +718,125 @@
 @keyframes luxurySpinner {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media print {
+
+  body * {
+    visibility: hidden;
+  }
+
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  .employee-modal-overlay {
+    .employee-modal {
+      height: auto !important;
+    }
+
+    .print-header {
+      display: block;
+      margin-bottom: 25px;
+    }
+
+    .print-header h2 {
+      font-size: 28px;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+
+    .print-date {
+      font-size: 16px;
+      margin: 4px 0;
+    }
+
+    .print-header hr {
+      margin-top: 15px;
+      border: 1px solid #ccc;
+    }
+  }
+
+  .employee-modal,
+  .employee-modal-overlay,
+  .modal-scrollable-body,
+  .main-box,
+  .left-box {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .employee-modal-overlay {
+    display: block !important;
+    top: 0 !important;
+
+    .employee-modal {
+      max-height: auto !important;
+      height: auto !important;
+    }
+  }
+
+  .print-section,
+  .print-section * {
+    visibility: visible;
+  }
+
+  .print-section {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+    box-shadow: none !important;
+    background: #fff;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Hide chart */
+  .right-box {
+    display: none !important;
+  }
+
+  .left-box {
+    width: 100% !important;
+  }
+
+  /* Hide header buttons */
+  .modal-header button,
+  .modal-controls-bar {
+    display: none !important;
+  }
+
+  .employee-modal,
+  .employee-modal-overlay,
+  .main-box,
+  .left-box {
+    background: #fff !important;
+    box-shadow: none !important;
+    border: none !important;
+    overflow: visible !important;
+  }
+
+  .metric-card-wrapper {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .profile-photo-img,
+  .profile-avatar-container {
+    width: 120px;
+    height: 120px;
   }
 }

@@ -123,6 +123,16 @@ $white: #ffffff;
               background-color: darken($primary-color, 5%);
             }
 
+            &.operator-day {
+              background-color: #69dbdb;
+              color: white;
+            }
+
+            &.operator-night {
+              background-color: #3c2a19;
+              color: white;
+            }
+
             small {
               display: block;
               margin-top: 4px;

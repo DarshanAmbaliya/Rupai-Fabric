@@ -18,6 +18,7 @@ const machineSchema = new mongoose.Schema(
 
 const operatorSchema = new mongoose.Schema(
   {
+    operator_id: String,
     operator_name: String,
     shift: String,
     average_meter: Number,

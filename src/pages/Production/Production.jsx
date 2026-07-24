@@ -246,13 +246,14 @@ const Production = () => {
 
         operatorGroups[operator].push(m);
       });
-
       Object.keys(operatorGroups).forEach((operator) => {
         const machineBlock = operatorGroups[operator];
-        // const employee = employees.find(
-        //   emp => emp.name.trim() === operator.trim()
-        // );
+        const employee = employees.find(
+          emp => emp.name.trim() === operator.trim()
+        );
+
         entries.push({
+          operator_id: employee?._id,
           operator_name: operator,
           shift,
 
@@ -307,6 +308,7 @@ const Production = () => {
             };
           }),
         });
+        console.log(entries);
       });
     });
 
