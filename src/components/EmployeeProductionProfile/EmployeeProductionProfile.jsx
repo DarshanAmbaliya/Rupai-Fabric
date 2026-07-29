@@ -2,10 +2,10 @@ import React, { useEffect, useState, useMemo, useRef } from "react";
 import Chart from "react-apexcharts";
 import axios from "axios";
 import "./EmployeeProductionProfile.css";
+import { NavLink } from "react-router-dom";
 
 const EmployeeProductionProfile = ({ employeeId, onClose }) => {
   const currentMonthStr = new Date().toISOString().slice(0, 7); // YYYY-MM
-
   // --- STATE MANAGEMENT ---
   const [selectedOperatorId, setSelectedOperatorId] = useState(employeeId);
   const [operatorsList, setOperatorsList] = useState([]);
@@ -13,7 +13,9 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
   const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10));
   const [loading, setLoading] = useState(false);
   const [rawMonthlyData, setRawMonthlyData] = useState({});
-  const [avatarImage, setAvatarImage] = useState(null); // Base64 image string
+  const [avatarImage, setAvatarImage] = useState("");
+  const [profileImage, setProfileImage] = useState("");
+  const [showImageViewer, setShowImageViewer] = useState(false);
 
   // Chart Metric Selector State ("meters" | "machines" | "picks" | "efficiency")
   const [selectedChartMetric, setSelectedChartMetric] = useState("meters");
@@ -78,24 +80,23 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
     fetchRangeData();
   }, [startDate, endDate, API_BASE_URL]);
 
-  // --- PERSISTENT AVATAR IMAGES PER OPERATOR ---
   useEffect(() => {
-    const savedImage = localStorage.getItem(`avatar_${selectedOperatorId}`);
-    setAvatarImage(savedImage || null);
-  }, [selectedOperatorId]);
+    if (!selectedOperatorId) return;
+    const fetchProfileImage = async () => {
+      try {
+        const res = await axios.get(
+          `${API_BASE_URL}/api/employee-profile/${selectedOperatorId}`
+        );
 
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result;
-        setAvatarImage(base64String);
-        localStorage.setItem(`avatar_${selectedOperatorId}`, base64String);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+        setProfileImage(
+          res.data.profilePicture?.url || ""
+        );
+      } catch (err) {
+        setProfileImage("");
+      }
+    };
+    fetchProfileImage();
+  }, [selectedOperatorId]);
 
   const triggerFileSelect = () => {
     fileInputRef.current.click();
@@ -123,6 +124,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
     const chartPicks = [];
     const chartEfficiency = [];
     const chartLostMeter = [];
+    const dailyTableData = [];
 
     const startTs = new Date(startDate).setHours(0, 0, 0, 0);
     const endTs = new Date(endDate).setHours(23, 59, 59, 999);
@@ -180,6 +182,42 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
               }
 
               totalMachinesMeasured++;
+            });
+
+            const activeEffMachines = validMachines.filter(
+              (m) => (m.efficiency || 0) > 0
+            );
+
+            const avgEfficiency =
+              activeEffMachines.length > 0
+                ? Number(
+                  (
+                    activeEffMachines.reduce(
+                      (sum, m) => sum + (m.efficiency || 0),
+                      0
+                    ) / activeEffMachines.length
+                  ).toFixed(2)
+                )
+                : 0;
+
+            const activePickMachines = validMachines.filter(
+              (m) => (m.machinePick || 0) > 0
+            );
+
+            const avgPickPerMachine =
+              activePickMachines.length > 0
+                ? Number(
+                  (dailyPickSum / activePickMachines.length).toFixed(2)
+                )
+                : 0;
+
+            dailyTableData.push({
+              date: dateStr,
+              avgEfficiency,
+              avgPickPerMachine,
+              totalPick: dailyPickSum,
+              lostMeter: Number(dailyLostMeter.toFixed(2)),
+              totalProduction: dailyMeterSum,
             });
 
             totalMeters += dailyMeterSum;
@@ -242,10 +280,48 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
       chartSeries: [
         { name: targetedSeriesName, data: targetedChartData }
       ],
-      hasChartData: chartDates.length > 0
+      hasChartData: chartDates.length > 0,
+      dailyTableData,
     };
   }, [rawMonthlyData, startDate, endDate, selectedOperatorId, selectedChartMetric]);
+  const totalEntries = stats.dailyTableData.length;
 
+  const footer = {
+    avgEfficiency:
+      totalEntries > 0
+        ? (
+          stats.dailyTableData.reduce(
+            (sum, row) => sum + row.avgEfficiency,
+            0
+          ) / totalEntries
+        ).toFixed(2)
+        : 0,
+
+    avgPickPerMachine:
+      totalEntries > 0
+        ? (
+          stats.dailyTableData.reduce(
+            (sum, row) => sum + row.avgPickPerMachine,
+            0
+          ) / totalEntries
+        ).toFixed(2)
+        : 0,
+
+    totalPick: stats.dailyTableData.reduce(
+      (sum, row) => sum + row.totalPick,
+      0
+    ),
+
+    totalLostMeter: stats.dailyTableData.reduce(
+      (sum, row) => sum + row.lostMeter,
+      0
+    ),
+
+    totalProduction: stats.dailyTableData.reduce(
+      (sum, row) => sum + row.totalProduction,
+      0
+    ),
+  };
   return (
     <div className="employee-modal-overlay">
       <div className="employee-modal">
@@ -317,22 +393,22 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
                   <hr />
                 </div>
                 <div className="avatar-wrapper">
-                  <div className="profile-avatar-container" onClick={triggerFileSelect} title="Click to change photo">
-                    {avatarImage ? (
-                      <img src={avatarImage} alt="Operator Profile" className="profile-photo-img" />
+                  <div className="profile-avatar-container" title="Click to change photo">
+                    {profileImage ? (
+                      <img
+                        src={profileImage}
+                        className="profile-photo-img"
+                        onClick={() => profileImage && setShowImageViewer(true)}
+                      />
                     ) : (
                       <div className="profile-avatar-initial">
                         {currentOperatorName.charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <div className="avatar-overlay">
-                      <span>Change Photo</span>
-                    </div>
                   </div>
                   <input
                     type="file"
                     ref={fileInputRef}
-                    onChange={handleAvatarChange}
                     accept="image/*"
                     style={{ display: "none" }}
                   />
@@ -404,7 +480,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
               </div>
 
               {/* Right Box: Dynamic Chart Analytics View */}
-              <div className="box right-box">
+              <div className="box right-box print-section">
                 <div className="chart-header-row">
                   <h4>Production Timeline Trend</h4>
                   <div className="metric-selector">
@@ -425,16 +501,67 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
                   </div>
                 </div>
 
-                {stats.hasChartData ? (
-                  <Chart
-                    options={stats.chartOptions}
-                    series={stats.chartSeries}
-                    type="line"
-                    height="320"
-                  />
-                ) : (
-                  <div className="no-data-msg">No entries found matching this date range.</div>
-                )}
+                <div className="chart-container">
+                  {stats.hasChartData ? (
+                    <Chart
+                      options={stats.chartOptions}
+                      series={stats.chartSeries}
+                      type="line"
+                      height="320"
+                    />
+                  ) : (
+                    <div className="no-data-msg">No entries found matching this date range.</div>
+                  )}
+                </div>
+
+                <div className="employee-table print-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Avg Efficiency %</th>
+                        <th>Avg Pick / Machine</th>
+                        {/* <th>Total Pick</th> */}
+                        <th>Lost Meter</th>
+                        <th>Total Production (m)</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {stats.dailyTableData.map((row) => (
+                        <tr key={row.date}>
+                          <td>
+                            <NavLink to={`/production/${row.date.split('-').reverse().join('-')}`}>
+                              {row.date}
+                            </NavLink>
+                          </td>
+                          <td>{row.avgEfficiency}</td>
+                          <td>{row.avgPickPerMachine}</td>
+                          {/* <td>{row.totalPick}</td> */}
+                          <td
+                            style={{
+                              color: row.lostMeter < 0 ? "#dc2626" : "#15803d",
+                            }}
+                          >
+                            {row.lostMeter}
+                          </td>
+                          <td>{row.totalProduction}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+
+                    <tfoot>
+                      <tr>
+                        <th>Total / Avg</th>
+                        <th>{footer.avgEfficiency}</th>
+                        <th>{footer.avgPickPerMachine}</th>
+                        {/* <th>{footer.totalPick}</th> */}
+                        <th>{footer.totalLostMeter}</th>
+                        <th>{footer.totalProduction}</th>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -446,6 +573,18 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
           </button>
         </div>
       </div>
+      {showImageViewer && (
+        <div
+          className="imageViewer"
+          onClick={() => setShowImageViewer(false)}
+        >
+          <img
+            src={profileImage}
+            alt={currentOperatorName}
+            className="viewerImage"
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -72,6 +72,15 @@ const Homepage = ({ currentUser }) => {
                   Production Report
                 </NavLink>
               </li>
+
+              <li>
+                <NavLink
+                  to="/employee-profile"
+                  style={navStyle("#009688")}
+                >
+                  Employee Profile
+                </NavLink>
+              </li>
             </>
           )}
 

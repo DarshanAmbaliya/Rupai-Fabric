@@ -253,7 +253,7 @@ const Production = () => {
         );
 
         entries.push({
-          operator_id: employee?._id,
+          operator_id: employee?.employeeId || null,
           operator_name: operator,
           shift,
 

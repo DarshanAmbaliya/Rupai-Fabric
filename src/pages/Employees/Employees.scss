@@ -1,0 +1,271 @@
+// ==========================================
+// Design Tokens - Light Premium Palette
+// ==========================================
+$color-bg-base: #f8fafc; // Porcelain background
+$color-card-bg: #ffffff; // Crisp white card
+$color-card-border: #e2e8f0; // Subtle border
+$color-card-hover-border: #cbd5e1;
+
+$color-primary: #3b82f6; // Royal Indigo Blue
+$color-primary-dark: #1d4ed8;
+$color-accent: #06b6d4; // Soft Cyan Accent
+
+$color-text-title: #0f172a; // Deep slate
+$color-text-body: #334155; // Slate gray
+$color-text-muted: #64748b; // Soft gray text
+$color-text-light: #ffffff;
+
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 18px;
+$radius-xl: 24px;
+
+$shadow-soft: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+$shadow-elevated: 0 16px 32px -8px rgba(15, 23, 42, 0.12);
+$shadow-button: 0 8px 18px -4px rgba(59, 130, 246, 0.35);
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin transition-smooth($prop: all, $time: 0.25s) {
+  transition: $prop $time cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+// ==========================================
+// Employees Page Layout
+// ==========================================
+
+.employeesPage {
+  min-height: 100vh;
+  padding: 40px 32px;
+  background-color: $color-bg-base;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.04) 0px, transparent 50%);
+
+  h2 {
+    font-size: 30px;
+    font-weight: 700;
+    color: $color-text-title;
+    margin-bottom: 36px;
+    letter-spacing: -0.02em;
+    position: relative;
+    display: inline-block;
+
+    &::after {
+      content: "";
+      width: 50px;
+      height: 4px;
+      background: linear-gradient(90deg, $color-primary, $color-accent);
+      display: block;
+      margin-top: 8px;
+      border-radius: 10px;
+    }
+  }
+
+  // Loading indicator
+  >h3 {
+    text-align: center;
+    margin-top: 100px;
+    color: $color-text-muted;
+    font-size: 18px;
+    font-weight: 500;
+    animation: fadeInPulse 1.5s infinite ease-in-out;
+  }
+}
+
+// ==========================================
+// Employee Grid & Cards
+// ==========================================
+
+.employeeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+
+  .profileStatus {
+    margin: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .status {
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .success {
+    color: #16a34a;
+    background: #dcfce7;
+  }
+
+  .danger {
+    color: #dc2626;
+    background: #fee2e2;
+  }
+
+  // Empty state fallback inside grid
+  >h3 {
+    grid-column: 1 / -1;
+    background: $color-card-bg;
+    border: 1px solid $color-card-border;
+    border-radius: $radius-lg;
+    padding: 60px 20px;
+    text-align: center;
+    color: $color-text-muted;
+    font-size: 16px;
+    font-weight: 500;
+    box-shadow: $shadow-soft;
+  }
+}
+
+.employeeCard {
+  position: relative;
+  overflow: hidden;
+  background: $color-card-bg;
+  border: 1px solid $color-card-border;
+  border-radius: $radius-lg;
+  padding: 28px 24px;
+  text-align: center;
+  box-shadow: $shadow-soft;
+  @include transition-smooth;
+
+  // Top accent line
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, $color-primary, $color-accent);
+    opacity: 0.8;
+    @include transition-smooth(opacity);
+  }
+
+  // Background subtle circle glow
+  &::after {
+    content: "";
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+    border-color: $color-card-hover-border;
+    box-shadow: $shadow-elevated;
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  .employeeName {
+    font-size: 20px;
+    font-weight: 700;
+    color: $color-text-title;
+    margin-bottom: 24px;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // Optional Salary badge (if un-commented in JS)
+  .salary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0fdf4;
+    color: #16a34a;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 8px 18px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #dcfce7;
+  }
+
+  .profileBtn {
+    width: 100%;
+    height: 46px;
+    border: none;
+    border-radius: $radius-md;
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+    color: $color-text-light;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    @include transition-smooth;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-button;
+      filter: brightness(1.05);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}
+
+// ==========================================
+// Animations & Media Queries
+// ==========================================
+
+@keyframes fadeInPulse {
+
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .employeesPage {
+    padding: 24px 16px;
+
+    h2 {
+      font-size: 24px;
+      margin-bottom: 24px;
+    }
+  }
+
+  .employeeGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .employeeCard {
+    padding: 22px 18px;
+
+    .employeeName {
+      font-size: 18px;
+      margin-bottom: 18px;
+    }
+
+    .profileBtn {
+      height: 44px;
+      font-size: 13.5px;
+    }
+  }
+}

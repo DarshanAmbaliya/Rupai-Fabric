@@ -1,4 +1,47 @@
+const mongoose = require("mongoose");
 const Payroll = require('../models/Employee');
+
+exports.migrateEmployeeIds = async (req, res) => {
+  try {
+    const payrolls = await Payroll.find();
+    let count = 0;
+
+    for (const payroll of payrolls) {
+      let changed = false;
+      for (const [month, employees] of payroll.months.entries()) {
+        const updatedEmployees = employees.map(emp => {
+          if (!emp.employeeId) {
+            emp.employeeId = new mongoose.Types.ObjectId();
+            count++;
+            changed = true;
+            console.log(
+              "Added ID:",
+              emp.name,
+              emp.employeeId
+            );
+          }
+          return emp;
+        });
+        payroll.months.set(month, updatedEmployees);
+      }
+
+      if (changed) {
+        payroll.markModified("months");
+        await payroll.save();
+      }
+    }
+
+    res.json({
+      message: "Migration completed",
+      updated: count
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      error: error.message
+    });
+  }
+};
 
 // GET: Fetch all payroll data
 exports.getEmployees = async (req, res) => {
@@ -16,7 +59,7 @@ exports.getEmployees = async (req, res) => {
 
 // POST: Save or Update a specific month's data
 exports.createEmployee = async (req, res) => {
-  const { year, month, employees } = req.body; 
+  const { year, month, employees } = req.body;
 
   if (!year || !month) {
     return res.status(400).json({ message: "Year and Month are required" });
@@ -31,7 +74,7 @@ exports.createEmployee = async (req, res) => {
 
     // Set the specific month (e.g., "january") in the Map
     payroll.months.set(month.toLowerCase(), employees);
-    
+
     // Tell Mongoose the Map data has changed
     payroll.markModified('months');
 

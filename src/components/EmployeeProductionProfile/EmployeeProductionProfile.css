@@ -15,6 +15,53 @@
   box-sizing: border-box;
   animation: overlayFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+.employee-modal-overlay .employee-table {
+  margin-top: 25px;
+  overflow-x: auto;
+}
+.employee-modal-overlay .employee-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.employee-modal-overlay .employee-table th {
+  background: #4f46e5;
+  color: #fff;
+  padding: 5px;
+}
+.employee-modal-overlay .employee-table a {
+  color: #4f46e5;
+  font-weight: 500;
+}
+.employee-modal-overlay .employee-table td {
+  padding: 5px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+.employee-modal-overlay .employee-table tbody tr:nth-child(even) {
+  background: #f8f8f8;
+}
+.employee-modal-overlay .employee-table tbody tr:hover {
+  background: #eef4ff;
+}
+.employee-modal-overlay .imageViewer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+.employee-modal-overlay .viewerImage {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 18px;
+  -o-object-fit: contain;
+     object-fit: contain;
+}
+.employee-modal-overlay .profile-photo-img {
+  cursor: pointer;
+}
 .employee-modal-overlay .print-header {
   display: none;
   width: 100%;
@@ -61,8 +108,8 @@
 }
 .employee-modal-overlay {
   /* ==========================================================================
-         2. INTERACTIVE HEADER ROW
-         ========================================================================== */
+       2. INTERACTIVE HEADER ROW
+       ========================================================================== */
 }
 .employee-modal-overlay .modal-header {
   display: flex;
@@ -112,8 +159,8 @@
 }
 .employee-modal-overlay {
   /* ==========================================================================
-         3. SEGMENTED FILTER & CONTROLS CONTROL STRIP
-         ========================================================================== */
+       3. SEGMENTED FILTER & CONTROLS CONTROL STRIP
+       ========================================================================== */
 }
 .employee-modal-overlay .modal-controls-bar {
   display: flex;
@@ -173,8 +220,8 @@
 }
 .employee-modal-overlay {
   /* ==========================================================================
-         4. INNER BODY SCROLL BAR TRACK
-         ========================================================================== */
+       4. INNER BODY SCROLL BAR TRACK
+       ========================================================================== */
 }
 .employee-modal-overlay .modal-scrollable-body {
   flex: 1;
@@ -198,8 +245,8 @@
 }
 .employee-modal-overlay {
   /* ==========================================================================
-         5. CONTAINER GRID ALIGNMENT
-         ========================================================================== */
+       5. CONTAINER GRID ALIGNMENT
+       ========================================================================== */
 }
 .employee-modal-overlay .main-box {
   display: flex;
@@ -217,11 +264,11 @@
 }
 .employee-modal-overlay {
   /* ==========================================================================
-         6. PREMIUM METRICS SIDEBAR (LEFT BOX)
-         ========================================================================== */
-  /* ==========================================================================
-       PREMIUM SIDEBAR WORKER INTERFACE (LEFT BOX NO-SCROLL EXPANSION PATCH)
+       6. PREMIUM METRICS SIDEBAR (LEFT BOX)
        ========================================================================== */
+  /* ==========================================================================
+     PREMIUM SIDEBAR WORKER INTERFACE (LEFT BOX NO-SCROLL EXPANSION PATCH)
+     ========================================================================== */
 }
 .employee-modal-overlay .left-box {
   flex: 0 0 380px;
@@ -452,8 +499,8 @@
 }
 .employee-modal-overlay {
   /* ==========================================================================
-         7. ANALYTICS DECK VIEWPORT (RIGHT BOX)
-         ========================================================================== */
+       7. ANALYTICS DECK VIEWPORT (RIGHT BOX)
+       ========================================================================== */
 }
 .employee-modal-overlay .right-box {
   flex: 1;
@@ -514,8 +561,8 @@
 }
 .employee-modal-overlay {
   /* ==========================================================================
-         8. LUXURY SYSTEM LOADERS & DATA FEEDBACK COUNTERS
-         ========================================================================== */
+       8. LUXURY SYSTEM LOADERS & DATA FEEDBACK COUNTERS
+       ========================================================================== */
 }
 .employee-modal-overlay .loading-state,
 .employee-modal-overlay .no-data-msg {
@@ -550,8 +597,8 @@
 
 /* ---------------- PRINT ---------------- */
 /* ==========================================================================
-       9. FLUID MEDIA COMPRESSION RESPONSIVE QUERIES
-       ========================================================================== */
+     9. FLUID MEDIA COMPRESSION RESPONSIVE QUERIES
+     ========================================================================== */
 @media (max-width: 1024px) {
   .employee-modal-overlay .employee-modal {
     padding: 5px;
@@ -611,8 +658,8 @@
   }
 }
 /* ==========================================================================
-       10. CINEMATIC INTERPOLATION KEYFRAMES
-       ========================================================================== */
+     10. CINEMATIC INTERPOLATION KEYFRAMES
+     ========================================================================== */
 @keyframes overlayFadeIn {
   from {
     opacity: 0;
@@ -637,101 +684,120 @@
   }
 }
 @media print {
-  body * {
-    visibility: hidden;
+  body {
+    background: white !important;
   }
   @page {
     size: A4;
-    margin: 10mm;
+    background-color: white;
   }
-  html,
-  body {
-    margin: 0;
-    padding: 0;
+  header {
+    display: none !important;
   }
-  .employee-modal-overlay .employee-modal {
-    height: auto !important;
+  /* Hide the main production page */
+  .production-report-section h2,
+  .production-report-section .filter-controls,
+  .production-report-section .production-data {
+    display: none !important;
   }
-  .employee-modal-overlay .print-header {
-    display: block;
-    margin-bottom: 25px;
-  }
-  .employee-modal-overlay .print-header h2 {
-    font-size: 28px;
-    margin-bottom: 15px;
-    font-weight: 700;
-  }
-  .employee-modal-overlay .print-date {
-    font-size: 16px;
-    margin: 4px 0;
-  }
-  .employee-modal-overlay .print-header hr {
-    margin-top: 15px;
-    border: 1px solid #ccc;
-  }
-  .employee-modal,
-  .employee-modal-overlay,
-  .modal-scrollable-body,
-  .main-box,
-  .left-box {
-    height: auto !important;
-    min-height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-  }
+  /* Print only the modal */
   .employee-modal-overlay {
-    display: block !important;
-    top: 0 !important;
-  }
-  .employee-modal-overlay .employee-modal {
-    max-height: auto !important;
-    height: auto !important;
-  }
-  .print-section,
-  .print-section * {
-    visibility: visible;
-  }
-  .print-section {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 20px;
-    box-shadow: none !important;
-    background: #fff;
     position: static !important;
+    display: block !important;
     width: 100% !important;
     height: auto !important;
-  }
-  /* Hide chart */
-  .right-box {
-    display: none !important;
-  }
-  .left-box {
-    width: 100% !important;
-  }
-  /* Hide header buttons */
-  .modal-header button,
-  .modal-controls-bar {
-    display: none !important;
-  }
-  .employee-modal,
-  .employee-modal-overlay,
-  .main-box,
-  .left-box {
+    overflow: visible !important;
     background: #fff !important;
     box-shadow: none !important;
+  }
+  .employee-modal-overlay .employee-modal {
+    position: static !important;
+    transform: none !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
     border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+  .employee-modal-overlay .employee-modal .modal-header,
+  .employee-modal-overlay .employee-modal .modal-controls-bar,
+  .employee-modal-overlay .employee-modal .chart-header-row,
+  .employee-modal-overlay .employee-modal .chart-container,
+  .employee-modal-overlay .employee-modal .print-button,
+  .employee-modal-overlay .employee-modal .close-btn {
+    display: none !important;
+  }
+  .employee-modal-overlay .employee-modal .print-header {
+    display: block !important;
+  }
+  .employee-modal-overlay .employee-modal .print-header h2 {
+    display: block !important;
+  }
+  .employee-modal-overlay .employee-modal .print-header .print-date {
+    padding-top: 15px !important;
+  }
+  .employee-modal-overlay .employee-modal .modal-scrollable-body {
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+  }
+  .employee-modal-overlay .employee-modal .main-box {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .employee-modal-overlay .employee-modal .left-box {
+    width: 100% !important;
+    flex: 0 0 300px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: white !important;
+    box-shadow: none !important;
+  }
+  .employee-modal-overlay .employee-modal .left-box .avatar-wrapper {
+    padding-top: 40px !important;
+  }
+  .employee-modal-overlay .employee-modal .left-box .metrics-grid {
+    background: white !important;
+  }
+  .employee-modal-overlay .employee-modal .right-box {
+    flex: 1 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    margin-top: 180px;
+  }
+  .employee-modal-overlay .employee-modal .employee-table {
     overflow: visible !important;
   }
-  .metric-card-wrapper {
-    -moz-column-break-inside: avoid;
-         break-inside: avoid;
+  .employee-modal-overlay .employee-modal .employee-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .employee-modal-overlay .employee-modal .employee-table thead {
+    display: table-header-group;
+  }
+  .employee-modal-overlay .employee-modal .employee-table tfoot {
+    display: table-footer-group;
+  }
+  .employee-modal-overlay .employee-modal .employee-table tr {
     page-break-inside: avoid;
   }
-  .profile-photo-img,
-  .profile-avatar-container {
-    width: 120px;
-    height: 120px;
+  .employee-modal-overlay .employee-modal .employee-table th,
+  .employee-modal-overlay .employee-modal .employee-table td {
+    border: 1px solid #000;
+    padding: 5px;
+    color: black !important;
+  }
+  .employee-modal-overlay .box {
+    border: 0 !important;
+    box-shadow: none !important;
   }
 }/*# sourceMappingURL=EmployeeProductionProfile.css.map */

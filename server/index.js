@@ -7,6 +7,7 @@ const fabricRoutes = require("./routes/fabricRoutes");
 const productionRoutes = require("./routes/productionRoutes.js")
 const yarnRoutes = require("./routes/yarnRoutes");
 const authRoutes = require("./routes/authRoutes");
+const employeeProfileRoutes = require("./routes/employeeProfileRoutes");
 
 dotenv.config();
 
@@ -31,6 +32,8 @@ app.use('/api/employees', employeeRoutes);
 app.use("/api/fabrics", fabricRoutes);
 app.use("/api/production", productionRoutes);
 app.use("/api/yarns", yarnRoutes);
+app.use('/api/employees', employeeRoutes);
+app.use("/api/employee-profile", employeeProfileRoutes);
 
 // api status Check
 app.get('/', (req, res) => {

@@ -1,0 +1,381 @@
+// ==========================================
+// Design Tokens & Premium Palette
+// ==========================================
+$color-primary: #6366f1;        // Indigo primary
+$color-primary-hover: #4f46e5;  // Deep indigo
+$color-accent: #8b5cf6;         // Violet gradient secondary
+$color-accent-light: #a78bfa;   // Soft violet highlight
+
+$color-danger: #f43f5e;         // Rose / Crimson
+$color-danger-hover: #e11d48;
+
+$color-surface-base: #0f172a;   // Deep navy / Slate dark
+$color-surface-card: #ffffff;
+$color-surface-alt: #f8fafc;
+$color-border: #e2e8f0;
+$color-border-subtle: #f1f5f9;
+
+$color-text-main: #0f172a;      // Slate 900
+$color-text-muted: #64748b;     // Slate 500
+$color-text-inverse: #ffffff;
+
+$radius-sm: 10px;
+$radius-md: 14px;
+$radius-lg: 20px;
+$radius-xl: 24px;
+
+$shadow-soft: 0 10px 30px -5px rgba(15, 23, 42, 0.05);
+$shadow-elevated: 0 20px 40px -15px rgba(15, 23, 42, 0.12);
+$shadow-glow: 0 12px 30px -8px rgba(99, 102, 241, 0.4);
+
+// ==========================================
+// Reusable Mixins
+// ==========================================
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@mixin full-overlay {
+  position: fixed;
+  inset: 0;
+}
+
+@mixin transition-smooth($prop: all, $time: 0.25s) {
+  transition: $prop $time cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+// ==========================================
+// Modal Component Styles
+// ==========================================
+
+.employeeModalOverlay {
+  @include full-overlay;
+  @include flex-center;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 99999;
+  padding: 24px;
+  animation: overlayFadeIn 0.3s ease-out;
+}
+
+.employeeModal {
+  width: 1080px;
+  max-width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: $color-surface-card;
+  border-radius: $radius-xl;
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  animation: modalSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+  // Custom Scrollbar
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $color-border;
+    border-radius: 10px;
+  }
+
+  .employeeHeader {
+    @include flex-between;
+    padding: 28px 36px;
+    background: linear-gradient(135deg, $color-surface-base 0%, #1e1b4b 100%);
+    color: $color-text-inverse;
+    position: relative;
+    overflow: hidden;
+
+    // Soft ambient glow behind title
+    &::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    h2 {
+      font-size: 26px;
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: white;
+    }
+
+    .closeBtn {
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      color: $color-text-inverse;
+      font-size: 16px;
+      cursor: pointer;
+      @include flex-center;
+      @include transition-smooth;
+      z-index: 1;
+
+      &:hover {
+        background: $color-danger;
+        border-color: $color-danger;
+        transform: rotate(90deg) scale(1.05);
+      }
+    }
+  }
+
+  .employeeName {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 32px 0 16px;
+    color: $color-text-main;
+    letter-spacing: -0.01em;
+  }
+
+  .loading {
+    height: 350px;
+    @include flex-center;
+    font-size: 18px;
+    font-weight: 600;
+    color: $color-primary;
+    letter-spacing: 0.02em;
+  }
+
+  .imageSection {
+    margin: 28px 36px;
+
+    h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      color: $color-text-muted;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+
+  .imageCard {
+    background: $color-surface-card;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    box-shadow: $shadow-soft;
+    border: 1px solid $color-border;
+    @include transition-smooth;
+
+    &:hover {
+      border-color: rgba($color-primary, 0.3);
+      box-shadow: $shadow-elevated;
+      transform: translateY(-4px);
+    }
+
+    .previewImage {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      cursor: pointer;
+      @include transition-smooth(transform, 0.4s);
+
+      &:hover {
+        transform: scale(1.03);
+      }
+    }
+
+    .noImage {
+      height: 240px;
+      @include flex-center;
+      background: $color-surface-alt;
+      font-size: 15px;
+      font-weight: 500;
+      color: $color-text-muted;
+      border-bottom: 1px solid $color-border-subtle;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 14px 18px;
+      background: $color-surface-alt;
+      border: none;
+      border-top: 1px solid $color-border-subtle;
+      font-size: 14px;
+      color: $color-text-muted;
+      outline: none;
+      cursor: pointer;
+
+      &::file-selector-button {
+        padding: 6px 14px;
+        margin-right: 12px;
+        border-radius: $radius-sm;
+        border: 1px solid $color-border;
+        background: $color-surface-card;
+        color: $color-text-main;
+        font-weight: 600;
+        cursor: pointer;
+        @include transition-smooth;
+
+        &:hover {
+          background: $color-primary;
+          color: $color-text-inverse;
+          border-color: $color-primary;
+        }
+      }
+    }
+
+    .buttonGroup {
+      display: flex;
+      gap: 12px;
+      padding: 16px 20px;
+      background: $color-surface-card;
+
+      button {
+        flex: 1;
+        height: 46px;
+        border: none;
+        border-radius: $radius-sm;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        @include transition-smooth;
+
+        &.saveBtn {
+          background: linear-gradient(135deg, $color-primary, $color-accent);
+          color: $color-text-inverse;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: $shadow-glow;
+            filter: brightness(1.05);
+          }
+        }
+
+        &.deleteBtn {
+          background: transparent;
+          color: $color-danger;
+          border: 1px solid rgba($color-danger, 0.3);
+
+          &:hover {
+            background: $color-danger;
+            color: $color-text-inverse;
+            border-color: $color-danger;
+            transform: translateY(-2px);
+          }
+        }
+      }
+    }
+  }
+
+  .footerButtons {
+    padding: 32px 36px;
+    @include flex-center;
+
+    .closeModalBtn {
+      min-width: 200px;
+      height: 48px;
+      border: 1px solid $color-border;
+      border-radius: $radius-md;
+      background: $color-surface-card;
+      color: $color-text-main;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      @include transition-smooth;
+
+      &:hover {
+        background: $color-surface-base;
+        color: $color-text-inverse;
+        border-color: $color-surface-base;
+        transform: translateY(-2px);
+        box-shadow: $shadow-soft;
+      }
+    }
+  }
+}
+
+// Lightbox / Image Viewer Utility Overlay
+.imageViewer {
+  @include full-overlay;
+  @include flex-center;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 999999;
+  animation: overlayFadeIn 0.25s ease-out;
+
+  .viewerImage {
+    max-width: 90%;
+    max-height: 90vh;
+    border-radius: $radius-md;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .viewerClose {
+    position: absolute;
+    top: 28px;
+    right: 36px;
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: $color-text-inverse;
+    font-size: 20px;
+    cursor: pointer;
+    @include flex-center;
+    @include transition-smooth;
+
+    &:hover {
+      background: $color-danger;
+      border-color: $color-danger;
+      transform: rotate(90deg) scale(1.05);
+    }
+  }
+}
+
+// ==========================================
+// Keyframe Animations
+// ==========================================
+
+@keyframes modalSlideUp {
+  from {
+    transform: translateY(24px) scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

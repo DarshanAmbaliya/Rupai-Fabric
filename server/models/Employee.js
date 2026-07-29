@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const EmployeeEntrySchema = new mongoose.Schema({
+  employeeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
+  },
   name: String,
   dailySalary: Number,
   attendance: [String],

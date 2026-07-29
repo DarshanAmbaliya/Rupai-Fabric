@@ -14,6 +14,7 @@ import AdminReport from './pages/AdminReport/AdminReport';
 import YarnQuality from './components/YarnQuality/YarnQuality';
 import Register from './pages/Register';
 import ResetPassword from "./pages/ResetPassword";
+import Employees from './pages/Employees/Employees';
 
 const getDeviceDetails = () => {
   const parser = new UAParser();
@@ -330,6 +331,13 @@ function App() {
         />
 
         <Route path="*" element={<Navigate to="/login" />} />
+
+        <Route
+          path="/employee-profile"
+          element={
+            <Employees currentUser={currentUser} />
+          }
+        />
 
       </Routes>
     </div>

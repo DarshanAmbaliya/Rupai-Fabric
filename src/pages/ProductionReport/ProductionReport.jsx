@@ -293,7 +293,7 @@ const ProductionReport = () => {
                   <th key="date">Date</th>
                   {sortedOperators.map((op) => (
                     <th
-                      key={op.id}
+                      key={op.employeeId}
                       className={op.shift === "Night" ? "operator-night" : "operator-day"}
                       style={{ cursor: "pointer" }}
                       onClick={() => {
