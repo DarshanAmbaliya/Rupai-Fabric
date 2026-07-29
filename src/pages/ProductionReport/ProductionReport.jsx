@@ -207,8 +207,8 @@ const ProductionReport = () => {
               <select value={metric} onChange={(e) => setMetric(e.target.value)}>
                 <option value="meter">Production Meter (m)</option>
                 <option value="efficiency">Average Efficiency (%)</option>
-                <option value="totalPick">Total Pick</option>
-                <option value="avgPick">Average Pick per Machine</option>
+                {/* <option value="totalPick">Total Pick</option>
+                <option value="avgPick">Average Pick per Machine</option> */}
               </select>
             </div>
 

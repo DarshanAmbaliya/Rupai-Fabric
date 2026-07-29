@@ -429,12 +429,12 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
                   </div>
 
                   {/* Added Total Machine Pick Sum Metric Card */}
-                  <div className="metric-card-wrapper">
+                  {/* <div className="metric-card-wrapper">
                     <span className="metric-title">Total Machine Pick</span>
                     <div className="metric-sub-value">
                       {stats.totalMachinePickSum.toLocaleString()}
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="metric-card-wrapper">
                     <span className="metric-title">Avg Meter/Machine</span>
@@ -448,10 +448,10 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
                     <div className="metric-sub-value">  {stats.avgMachinesPerDay} <small>Active</small></div>
                   </div>
 
-                  <div className="metric-card-wrapper">
+                  {/* <div className="metric-card-wrapper">
                     <span className="metric-title">Avg Machine Pick</span>
                     <div className="metric-sub-value">{stats.avgPickPerMachine}</div>
-                  </div>
+                  </div> */}
 
                   <div className="metric-card-wrapper priority-border">
                     <span className="metric-title">Avg Efficiency</span>
@@ -492,7 +492,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
                     >
                       <option value="meters">Production Meter</option>
                       <option value="machines">Machines Run / Day</option>
-                      <option value="picks">Machine Pick</option>
+                      {/* <option value="picks">Machine Pick</option> */}
                       <option value="efficiency">Avg Efficiency (%)</option>
                       <option value="lostmeter">
                         Lost Production Meter
@@ -520,7 +520,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
                       <tr>
                         <th>Date</th>
                         <th>Avg Efficiency %</th>
-                        <th>Avg Pick / Machine</th>
+                        {/* <th>Avg Pick / Machine</th> */}
                         {/* <th>Total Pick</th> */}
                         <th>Lost Meter</th>
                         <th>Total Production (m)</th>
@@ -536,7 +536,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
                             </NavLink>
                           </td>
                           <td>{row.avgEfficiency}</td>
-                          <td>{row.avgPickPerMachine}</td>
+                          {/* <td>{row.avgPickPerMachine}</td> */}
                           {/* <td>{row.totalPick}</td> */}
                           <td
                             style={{
@@ -554,7 +554,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
                       <tr>
                         <th>Total / Avg</th>
                         <th>{footer.avgEfficiency}</th>
-                        <th>{footer.avgPickPerMachine}</th>
+                        {/* <th>{footer.avgPickPerMachine}</th> */}
                         {/* <th>{footer.totalPick}</th> */}
                         <th>{footer.totalLostMeter}</th>
                         <th>{footer.totalProduction}</th>
