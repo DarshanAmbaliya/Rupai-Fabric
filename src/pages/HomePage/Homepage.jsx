@@ -13,48 +13,47 @@ const Homepage = ({ currentUser }) => {
         flexWrap: "wrap"
       }}>
 
-        {/* Common Links */}
-        <li>
-          <NavLink
-            to="/attendance"
-            style={navStyle("#4CAF50")}
-          >
-            Daily Attendance
-          </NavLink>
-        </li>
-
-         <li>
-          <NavLink
-            to="/fabric"
-            style={navStyle("#3F51B5")}
-          >
-            Add Fabric
-          </NavLink>
-        </li>
-        <li>
-          <NavLink
-            to="/yarn"
-            style={navStyle("#334155")}
-          >
-            Add Yarn
-          </NavLink>
-        </li>
-
-        <li>
-          <NavLink
-            to="/production"
-            style={navStyle("#2196F3")}
-          >
-            Daily Production
-          </NavLink>
-        </li>
-
         {/* Admin Only Links */}
         {(
           currentUser?.role === "admin" ||
           currentUser?.role === "site_developer"
         ) && (
             <>
+              {/* Common Links */}
+              <li>
+                <NavLink
+                  to="/attendance"
+                  style={navStyle("#4CAF50")}
+                >
+                  Daily Attendance
+                </NavLink>
+              </li>
+
+              <li>
+                <NavLink
+                  to="/fabric"
+                  style={navStyle("#3F51B5")}
+                >
+                  Add Fabric
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/yarn"
+                  style={navStyle("#334155")}
+                >
+                  Add Yarn
+                </NavLink>
+              </li>
+
+              <li>
+                <NavLink
+                  to="/production"
+                  style={navStyle("#2196F3")}
+                >
+                  Daily Production
+                </NavLink>
+              </li>
               <li>
                 <NavLink
                   to="/attendancerecord"
@@ -84,14 +83,30 @@ const Homepage = ({ currentUser }) => {
             </>
           )}
 
-        <li>
-          <NavLink
-            to="/adminreport"
-            style={navStyle("#f44336")}
-          >
-            Admin Report
-          </NavLink>
-        </li>
+        {
+          (
+            currentUser?.role === "staff" && (
+              <>
+                <li>
+                  <NavLink
+                    to="/production"
+                    style={navStyle("#2196F3")}
+                  >
+                    Daily Production
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/productionreport"
+                    style={navStyle("#9c27b0")}
+                  >
+                    Production Report
+                  </NavLink>
+                </li>
+              </>
+            )
+          )
+        }
       </ul>
       <div className="mataji-image" style={{ "display": "flex", "justifyContent": "center" }}>
         <img src="./rupai-mataji.jpeg" alt="" style={{ 'width': "200px", "height": "350px" }} />

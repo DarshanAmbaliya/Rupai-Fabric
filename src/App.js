@@ -311,7 +311,7 @@ function App() {
           path="/productionreport"
           element={
             currentUser?.role === "admin" ||
-              currentUser?.role === "site_developer" ? (
+              currentUser?.role === "site_developer" ||  currentUser?.role === "staff" ? (
               <ProductionReport />
             ) : (
               <Navigate to="/login" />
