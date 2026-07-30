@@ -152,7 +152,9 @@ export default function AttendancePage({ currentUser }) {
       let updatedEmp = { ...emp, [field]: value };
 
       if (['attendance', 'dailySalary', 'advance'].includes(field)) {
+        // UPDATED: Added 2P calculation (+2)
         const presentCount = updatedEmp.attendance.reduce((acc, v) => {
+          if (v === "2P") return acc + 2;
           if (v === "P") return acc + 1;
           if (v === "HP") return acc + 0.5;
           return acc;
@@ -195,20 +197,6 @@ export default function AttendancePage({ currentUser }) {
     const targetId = emp._id || emp.id;
     const targetName = emp.name;
 
-    // 1. First verification: Admin Password
-    // const password = window.prompt(`To delete ${targetName}, enter Admin Password:`);
-    // if (!password) return;
-
-    // Verify using your bcrypt hash for '5242MT'
-    // const adminHash = '$2b$10$Wi5OE4ZlocW49O/8qDbbgOatoV5Nbn/ug9pTLJohPdkoS53PU5MI2';
-    // const isMatch = bcrypt.compareSync(password, adminHash);
-
-    // if (!isMatch) {
-    //   alert("Incorrect password!");
-    //   return;
-    // }
-
-    // 2. Second verification: Employee Name check
     const confirmName = window.prompt(`Type "${targetName}" to confirm deletion:`);
 
     if (confirmName === targetName) {
@@ -225,11 +213,9 @@ export default function AttendancePage({ currentUser }) {
     const empId = emp._id || emp.id;
     const targetAdv = emp.advance[advIndex];
 
-    // Extract date and amount from the advance object
     const advDate = Object.keys(targetAdv)[0];
     const advAmount = Object.values(targetAdv)[0];
 
-    // Show prompt asking to type employee name
     const confirmMsg = `Remove Advance of ₹${advAmount} (${advDate}) for ${emp.name}? \n\nType "${emp.name}" to confirm:`;
     const userInput = window.prompt(confirmMsg);
 
@@ -266,13 +252,15 @@ export default function AttendancePage({ currentUser }) {
       <style>
         {`
 @media print {
-
  .table-wrapper,.app-header,.add-emp-btn{display:none !important;}
  .modal-overlay{background: none !important; align-items: start !important;padding-top: 80px !important;
     justify-content: center;}
  .modal-content{box-shadow: none !important;padding: 0 !important;
     border-radius: 0 !important;
     }
+}
+/* Optional styling class for 2P if you want custom background */
+.double-p-bg { background-color: #9b59b6; }
 `}
       </style>
       <header className="app-header">
@@ -345,7 +333,8 @@ export default function AttendancePage({ currentUser }) {
                       />
                     </td>}
                   {emp.attendance.map((v, i) => (
-                    <td key={i} className={`att-cell ${v === "P" ? "p-bg" :
+                    <td key={i} style={{ minWidth: '20px' }} className={`att-cell ${v === "2P" ? "double-p-bg" :
+                      v === "P" ? "p-bg" :
                         v === "HP" ? "hp-bg" :
                           v === "A" ? "a-bg" : ""
                       }`}>
@@ -356,14 +345,15 @@ export default function AttendancePage({ currentUser }) {
                       }}>
                         <option value="">-</option>
                         <option value="P">P</option>
-                        <option value="A">A</option>
+                        <option value="2P">2P</option>
                         <option value="HP">HP</option>
+                        <option value="A">A</option>
                       </select>
                     </td>
                   ))}
                   <td className="stats-cell text-p">{emp.totalPresent}</td>
                   <td className="stats-cell text-a">{emp.totalAbsent || 0}</td>
-                  <td>₹{emp.totalSalary}</td>
+                  <td>₹{Math.floor(emp.totalSalary || 0)}</td>
                   <td>
                     {isAdmin && (<><AdvanceInput onAdd={(d, a) => {
                       const newAdv = [...emp.advance, { [d]: Number(a) }];
@@ -378,7 +368,7 @@ export default function AttendancePage({ currentUser }) {
                       ))}
                     </div>
                   </td>
-                  <td className="money-text highlight">₹{emp.finalPay}</td>
+                  <td className="money-text highlight">₹{Math.floor(emp.finalPay)}</td>
                   <td className="action-cell">
                     <button className="view-btn" onClick={() => setViewingEmp(emp)}>View</button>
                     {isAdmin && (<><button className="trash-btn" onClick={() => deleteEmployee(emp)}>🗑️</button></>)}
