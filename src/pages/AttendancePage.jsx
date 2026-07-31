@@ -111,6 +111,7 @@ export default function AttendancePage({ currentUser }) {
     const newDays = getDaysInMonth(displayDate.year, newMonthIdx);
 
     const freshData = employees.map(emp => ({
+      employeeId: emp.employeeId,
       name: emp.name,
       dailySalary: emp.dailySalary,
       attendance: new Array(newDays).fill(""),
