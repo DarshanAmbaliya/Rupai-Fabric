@@ -16,7 +16,8 @@ const Homepage = ({ currentUser }) => {
         {/* Admin Only Links */}
         {(
           currentUser?.role === "admin" ||
-          currentUser?.role === "site_developer"
+          currentUser?.role === "site_developer" ||
+          currentUser?.role === "master"
         ) && (
             <>
               {/* Common Links */}
@@ -78,6 +79,15 @@ const Homepage = ({ currentUser }) => {
                   style={navStyle("#009688")}
                 >
                   Employee Profile
+                </NavLink>
+              </li>
+
+              <li>
+                <NavLink
+                  to="/adminreport"
+                  style={navStyle("#f44336")}
+                >
+                  Admin Report
                 </NavLink>
               </li>
             </>

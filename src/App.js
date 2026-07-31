@@ -299,7 +299,7 @@ function App() {
           path="/attendancerecord"
           element={
             currentUser?.role === "admin" ||
-              currentUser?.role === "site_developer" ? (
+              currentUser?.role === "site_developer" || currentUser?.role === "master" ? (
               <AttendanceRecord />
             ) : (
               <Navigate to="/login" />
@@ -311,7 +311,7 @@ function App() {
           path="/productionreport"
           element={
             currentUser?.role === "admin" ||
-              currentUser?.role === "site_developer" ||  currentUser?.role === "staff" ? (
+              currentUser?.role === "site_developer" ||  currentUser?.role === "staff" || currentUser?.role === "master" ? (
               <ProductionReport />
             ) : (
               <Navigate to="/login" />

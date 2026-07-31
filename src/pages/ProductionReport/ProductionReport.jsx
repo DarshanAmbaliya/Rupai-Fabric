@@ -195,7 +195,7 @@ const ProductionReport = () => {
   });
 
   return (
-    <section className="production-report-section">
+    <section className="production-report-section no-print">
       <div className="container">
         <div className="row">
           <h2>Production Report</h2>
