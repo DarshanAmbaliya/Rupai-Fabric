@@ -99,14 +99,6 @@ const Homepage = ({ currentUser }) => {
               <>
                 <li>
                   <NavLink
-                    to="/production"
-                    style={navStyle("#2196F3")}
-                  >
-                    Daily Production
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
                     to="/productionreport"
                     style={navStyle("#9c27b0")}
                   >
