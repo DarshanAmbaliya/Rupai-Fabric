@@ -793,13 +793,15 @@
   }
 
   /* Hide the main production page */
-  .production-report-section {
-    &.no-print {
+  body {
+    &.print-employee {
+      .production-report-section {
 
-      h2,
-      .filter-controls,
-      .production-data {
-        display: none !important;
+        h2,
+        .filter-controls,
+        .production-data {
+          display: none !important;
+        }
       }
     }
   }
@@ -885,7 +887,7 @@
         overflow: visible !important;
         border: 0 !important;
         box-shadow: none !important;
-        margin-top: 280px;
+        margin-top: 350px;
       }
 
       .employee-table {
@@ -898,10 +900,22 @@
 
         thead {
           display: table-header-group;
+
+          tr {
+            th {
+              color: white !important;
+            }
+          }
         }
 
         tfoot {
           display: table-footer-group;
+
+          tr {
+            th {
+              color: white !important;
+            }
+          }
         }
 
         tr {

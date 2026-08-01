@@ -695,9 +695,9 @@
     display: none !important;
   }
   /* Hide the main production page */
-  .production-report-section.no-print h2,
-  .production-report-section.no-print .filter-controls,
-  .production-report-section.no-print .production-data {
+  body.print-employee .production-report-section h2,
+  body.print-employee .production-report-section .filter-controls,
+  body.print-employee .production-report-section .production-data {
     display: none !important;
   }
   /* Print only the modal */
@@ -772,7 +772,7 @@
     overflow: visible !important;
     border: 0 !important;
     box-shadow: none !important;
-    margin-top: 280px;
+    margin-top: 350px;
   }
   .employee-modal-overlay .employee-modal .employee-table {
     overflow: visible !important;
@@ -784,8 +784,14 @@
   .employee-modal-overlay .employee-modal .employee-table thead {
     display: table-header-group;
   }
+  .employee-modal-overlay .employee-modal .employee-table thead tr th {
+    color: white !important;
+  }
   .employee-modal-overlay .employee-modal .employee-table tfoot {
     display: table-footer-group;
+  }
+  .employee-modal-overlay .employee-modal .employee-table tfoot tr th {
+    color: white !important;
   }
   .employee-modal-overlay .employee-modal .employee-table tr {
     page-break-inside: avoid;

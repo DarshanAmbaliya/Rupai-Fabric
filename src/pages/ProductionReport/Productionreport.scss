@@ -10,6 +10,18 @@ $white: #ffffff;
   background-color: $bg-light;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 
+  .print-btn {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 10px 40px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+  }
+
   .container {
     max-width: 1300px;
     margin: 0 auto;
@@ -392,6 +404,74 @@ $white: #ffffff;
           input {
             width: calc(100%);
             max-width: 100%;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+@media print {
+  body {
+    &.print-productionreport {
+      .production-report-section {
+        .container {
+          .row {
+            padding: 0;
+
+            h2 {
+              margin-bottom: 10px;
+              font-size: 22px !important;
+            }
+
+            .print-btn {
+              display: none !important;
+            }
+
+            .filter-controls {
+              display: none !important;
+            }
+
+            .production-data {
+              table {
+                margin: 0 !important;
+
+                thead {
+                  padding: 0 !important;
+
+                  tr {
+                    th {
+                      border: 1px solid #dee2e6 !important;
+                      background: black !important;
+                      color: white !important;
+
+                      &.operator-day,
+                      &.operator-night {
+                        background: black !important;
+                        color: white !important;
+                      }
+                    }
+                  }
+                }
+
+                tbody {
+                  td {
+                    border: 1px solid #dee2e6 !important;
+                    font-size: 15px !important;
+                  }
+                }
+
+                tfoot {
+                  tr {
+                    td {
+                      color: white !important;
+                      background-color: black !important;
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }

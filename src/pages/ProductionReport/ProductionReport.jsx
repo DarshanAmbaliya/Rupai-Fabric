@@ -194,11 +194,21 @@ const ProductionReport = () => {
       : totalB - totalA;
   });
 
+  const printProductionReport = () => {
+    document.body.classList.add("print-productionreport");
+    window.print();
+    document.body.classList.remove("print-productionreport");
+  };
+
   return (
     <section className="production-report-section no-print">
       <div className="container">
         <div className="row">
-          <h2>Production Report</h2>
+          <h2>Production Report
+          <button className="print-btn" onClick={printProductionReport}>
+              Print
+            </button>
+          </h2>
 
           <div className="filter-controls">
             {/* --- NEW METRIC DROPDOWN FILTER --- */}

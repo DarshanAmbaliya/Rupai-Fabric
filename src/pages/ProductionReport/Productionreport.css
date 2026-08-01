@@ -2,6 +2,17 @@
   background-color: #f8f9fa;
   font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
+.production-report-section .print-btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 10px 40px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
 .production-report-section .container {
   max-width: 1300px;
   margin: 0 auto;
@@ -293,5 +304,43 @@
   .production-report-section .filter-controls .filter-menu .filter-controls input {
     width: 100%;
     max-width: 100%;
+  }
+}
+@media print {
+  body.print-productionreport .production-report-section .container .row {
+    padding: 0;
+  }
+  body.print-productionreport .production-report-section .container .row h2 {
+    margin-bottom: 10px;
+    font-size: 22px !important;
+  }
+  body.print-productionreport .production-report-section .container .row .print-btn {
+    display: none !important;
+  }
+  body.print-productionreport .production-report-section .container .row .filter-controls {
+    display: none !important;
+  }
+  body.print-productionreport .production-report-section .container .row .production-data table {
+    margin: 0 !important;
+  }
+  body.print-productionreport .production-report-section .container .row .production-data table thead {
+    padding: 0 !important;
+  }
+  body.print-productionreport .production-report-section .container .row .production-data table thead tr th {
+    border: 1px solid #dee2e6 !important;
+    background: black !important;
+    color: white !important;
+  }
+  body.print-productionreport .production-report-section .container .row .production-data table thead tr th.operator-day, body.print-productionreport .production-report-section .container .row .production-data table thead tr th.operator-night {
+    background: black !important;
+    color: white !important;
+  }
+  body.print-productionreport .production-report-section .container .row .production-data table tbody td {
+    border: 1px solid #dee2e6 !important;
+    font-size: 15px !important;
+  }
+  body.print-productionreport .production-report-section .container .row .production-data table tfoot tr td {
+    color: white !important;
+    background-color: black !important;
   }
 }/*# sourceMappingURL=Productionreport.css.map */

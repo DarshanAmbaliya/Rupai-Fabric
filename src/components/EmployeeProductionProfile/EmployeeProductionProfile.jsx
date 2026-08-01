@@ -322,6 +322,11 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
       0
     ),
   };
+  const printEmployee = () => {
+    document.body.classList.add("print-employee");
+    window.print();
+    document.body.classList.remove("print-employee");
+  };
   return (
     <div className="employee-modal-overlay">
       <div className="employee-modal">
@@ -568,7 +573,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
         </div>
 
         <div className="print-button">
-          <button className="print-btn" onClick={() => window.print()}>
+          <button className="print-btn" onClick={printEmployee}>
             🖨 Print
           </button>
         </div>
