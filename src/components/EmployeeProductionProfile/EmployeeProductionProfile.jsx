@@ -461,7 +461,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
                   <div className="metric-card-wrapper priority-border">
                     <span className="metric-title">Avg Efficiency</span>
                     <div className="metric-sub-value accent-text">
-                      {stats.avgEfficiency}%
+                    {footer.avgEfficiency}%
                     </div>
                   </div>
 
@@ -574,7 +574,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
 
         <div className="print-button">
           <button className="print-btn" onClick={printEmployee}>
-            🖨 Print
+             Print
           </button>
         </div>
       </div>
