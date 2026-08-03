@@ -10,18 +10,6 @@ $white: #ffffff;
   background-color: $bg-light;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 
-  .print-btn {
-    background: #2563eb;
-    color: #fff;
-    border: none;
-    padding: 10px 40px;
-    font-size: 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.3s;
-  }
-
   .container {
     max-width: 1300px;
     margin: 0 auto;
@@ -41,6 +29,73 @@ $white: #ffffff;
 
   .title {
     display: none;
+  }
+
+  .employee-filter {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .employee-select {
+    width: 230px;
+    height: 42px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    padding: 0 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background: #fff;
+    font-weight: 500;
+  }
+
+  .employee-select:hover {
+    border-color: #2563eb;
+  }
+
+  .employee-dropdown {
+    position: absolute;
+    top: 75px;
+    left: 0;
+    width: 280px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .15);
+    z-index: 999;
+    padding: 12px;
+  }
+
+  .employee-dropdown input[type="text"] {
+    width: 100%;
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+
+  .employee-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    cursor: pointer;
+  }
+
+  .employee-item:hover {
+    background: #f5f7fa;
+  }
+
+  .employee-dropdown hr {
+    margin: 8px 0;
+  }
+
+  .employee-dropdown {
+    max-height: 320px;
+    overflow-y: auto;
   }
 
   // Input styling
@@ -96,6 +151,18 @@ $white: #ffffff;
     border-radius: 12px;
     padding: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+    .print-btn {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 10px 40px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s;
+    }
   }
 
   .production-data {
@@ -122,6 +189,20 @@ $white: #ffffff;
             text-align: center;
             border: none;
 
+            &.operator-day {
+              background-color: #69dbdb;
+              color: white;
+            }
+
+            &.operator-night {
+              background-color: #3c2a19;
+              color: white;
+            }
+
+            a {
+              color: white;
+            }
+
             &:first-child {
               border-top-left-radius: 8px;
               text-align: left;
@@ -133,16 +214,6 @@ $white: #ffffff;
             &:last-child {
               border-top-right-radius: 8px;
               background-color: darken($primary-color, 5%);
-            }
-
-            &.operator-day {
-              background-color: #69dbdb;
-              color: white;
-            }
-
-            &.operator-night {
-              background-color: #3c2a19;
-              color: white;
             }
 
             small {
@@ -163,6 +234,11 @@ $white: #ffffff;
           td {
             padding: 5px;
             text-align: center;
+
+            &.alert {
+              background-color: red;
+              color: white;
+            }
 
             &:nth-child(1) {
               position: sticky;
@@ -208,18 +284,25 @@ $white: #ffffff;
 
       tfoot {
         tr {
-          &:last-child {
-            td {
-              background-color: $bg-light;
-              border-bottom: none;
-              color: $primary-color;
-              font-size: 1rem;
-              padding: 18px 10px;
 
-              &:first-child {
-                border-bottom-left-radius: 8px;
-              }
+          // &:last-child {
+          td {
+            &:first-child {
+              position: sticky;
+              left: 0;
             }
+
+            background-color: $bg-light;
+            border-bottom: none;
+            color: $primary-color;
+            font-size: 1rem;
+            padding: 18px 10px;
+
+            &:first-child {
+              border-bottom-left-radius: 8px;
+            }
+
+            // }
           }
 
           td {
@@ -228,6 +311,36 @@ $white: #ffffff;
               color: $white;
               background-color: $accent-color;
               text-align: center;
+            }
+          }
+        }
+      }
+    }
+
+    &.quality-meter {
+      table {
+        tfoot {
+          tr {
+
+            &:nth-child(2),
+            &:nth-child(3) {
+              td {
+                padding: 5px;
+
+                &:last-child {
+                  background-color: #f8f9fa;
+                  color: black;
+                  font-weight: 600;
+                }
+              }
+            }
+
+            &:last-child {
+              td {
+                &:last-child {
+                  border-bottom-right-radius: 15px;
+                }
+              }
             }
           }
         }

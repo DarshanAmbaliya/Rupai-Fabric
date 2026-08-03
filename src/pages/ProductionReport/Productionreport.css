@@ -2,17 +2,6 @@
   background-color: #f8f9fa;
   font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
-.production-report-section .print-btn {
-  background: #2563eb;
-  color: #fff;
-  border: none;
-  padding: 10px 40px;
-  font-size: 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.3s;
-}
 .production-report-section .container {
   max-width: 1300px;
   margin: 0 auto;
@@ -30,6 +19,64 @@
 }
 .production-report-section .title {
   display: none;
+}
+.production-report-section .employee-filter {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.production-report-section .employee-select {
+  width: 230px;
+  height: 42px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  padding: 0 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background: #fff;
+  font-weight: 500;
+}
+.production-report-section .employee-select:hover {
+  border-color: #2563eb;
+}
+.production-report-section .employee-dropdown {
+  position: absolute;
+  top: 75px;
+  left: 0;
+  width: 280px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+  padding: 12px;
+}
+.production-report-section .employee-dropdown input[type=text] {
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+.production-report-section .employee-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  cursor: pointer;
+}
+.production-report-section .employee-item:hover {
+  background: #f5f7fa;
+}
+.production-report-section .employee-dropdown hr {
+  margin: 8px 0;
+}
+.production-report-section .employee-dropdown {
+  max-height: 320px;
+  overflow-y: auto;
 }
 .production-report-section .filter-controls {
   display: flex;
@@ -78,6 +125,17 @@
   padding: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
+.production-report-section .row .print-btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 10px 40px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
 .production-report-section .production-data {
   overflow: auto;
 }
@@ -100,6 +158,17 @@
   text-align: center;
   border: none;
 }
+.production-report-section .production-data table thead tr th.operator-day {
+  background-color: #69dbdb;
+  color: white;
+}
+.production-report-section .production-data table thead tr th.operator-night {
+  background-color: #3c2a19;
+  color: white;
+}
+.production-report-section .production-data table thead tr th a {
+  color: white;
+}
 .production-report-section .production-data table thead tr th:first-child {
   border-top-left-radius: 8px;
   text-align: left;
@@ -110,14 +179,6 @@
 .production-report-section .production-data table thead tr th:last-child {
   border-top-right-radius: 8px;
   background-color: rgb(34.9516129032, 49.25, 63.5483870968);
-}
-.production-report-section .production-data table thead tr th.operator-day {
-  background-color: #69dbdb;
-  color: white;
-}
-.production-report-section .production-data table thead tr th.operator-night {
-  background-color: #3c2a19;
-  color: white;
 }
 .production-report-section .production-data table thead tr th small {
   display: block;
@@ -132,6 +193,10 @@
 .production-report-section .production-data table tbody tr td {
   padding: 5px;
   text-align: center;
+}
+.production-report-section .production-data table tbody tr td.alert {
+  background-color: red;
+  color: white;
 }
 .production-report-section .production-data table tbody tr td:nth-child(1) {
   position: sticky;
@@ -163,14 +228,18 @@
   font-weight: 600;
   color: #2c3e50;
 }
-.production-report-section .production-data table tfoot tr:last-child td {
+.production-report-section .production-data table tfoot tr td:first-child {
+  position: sticky;
+  left: 0;
+}
+.production-report-section .production-data table tfoot tr td {
   background-color: #f8f9fa;
   border-bottom: none;
   color: #2c3e50;
   font-size: 1rem;
   padding: 18px 10px;
 }
-.production-report-section .production-data table tfoot tr:last-child td:first-child {
+.production-report-section .production-data table tfoot tr td:first-child {
   border-bottom-left-radius: 8px;
 }
 .production-report-section .production-data table tfoot tr td:last-child {
@@ -178,6 +247,17 @@
   color: #ffffff;
   background-color: #3498db;
   text-align: center;
+}
+.production-report-section .production-data.quality-meter table tfoot tr:nth-child(2) td, .production-report-section .production-data.quality-meter table tfoot tr:nth-child(3) td {
+  padding: 5px;
+}
+.production-report-section .production-data.quality-meter table tfoot tr:nth-child(2) td:last-child, .production-report-section .production-data.quality-meter table tfoot tr:nth-child(3) td:last-child {
+  background-color: #f8f9fa;
+  color: black;
+  font-weight: 600;
+}
+.production-report-section .production-data.quality-meter table tfoot tr:last-child td:last-child {
+  border-bottom-right-radius: 15px;
 }
 
 .Production-table .yarn-table {

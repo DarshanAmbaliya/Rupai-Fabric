@@ -19,6 +19,10 @@
   margin-top: 25px;
   overflow-x: auto;
 }
+.employee-modal-overlay .employee-table td.min-efficiency {
+  background: red;
+  color: white;
+}
 .employee-modal-overlay .employee-table table {
   width: 100%;
   border-collapse: collapse;

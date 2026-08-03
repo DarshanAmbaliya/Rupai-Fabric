@@ -18,6 +18,13 @@
   .employee-table {
     margin-top: 25px;
     overflow-x: auto;
+
+    td {
+      &.min-efficiency {
+        background: red;
+        color: white;
+      }
+    }
   }
 
   .employee-table table {

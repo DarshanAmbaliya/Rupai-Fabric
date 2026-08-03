@@ -322,6 +322,11 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
       0
     ),
   };
+
+  const minEfficiency = Math.min(
+    ...stats.dailyTableData.map(row => Number(row.avgEfficiency))
+  );
+
   const printEmployee = () => {
     document.body.classList.add("print-employee");
     window.print();
@@ -461,7 +466,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
                   <div className="metric-card-wrapper priority-border">
                     <span className="metric-title">Avg Efficiency</span>
                     <div className="metric-sub-value accent-text">
-                    {footer.avgEfficiency}%
+                      {footer.avgEfficiency}%
                     </div>
                   </div>
 
@@ -540,7 +545,9 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
                               {row.date}
                             </NavLink>
                           </td>
-                          <td>{row.avgEfficiency}</td>
+                          <td
+                            className={Number(row.avgEfficiency) === minEfficiency ? "min-efficiency" : ""}
+                          >{row.avgEfficiency}</td>
                           {/* <td>{row.avgPickPerMachine}</td> */}
                           {/* <td>{row.totalPick}</td> */}
                           <td
@@ -561,7 +568,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
                         <th>{footer.avgEfficiency}</th>
                         {/* <th>{footer.avgPickPerMachine}</th> */}
                         {/* <th>{footer.totalPick}</th> */}
-                        <th>{footer.totalLostMeter}</th>
+                        <th>{(footer.totalLostMeter).toFixed(2)}</th>
                         <th>{footer.totalProduction}</th>
                       </tr>
                     </tfoot>
@@ -574,7 +581,7 @@ const EmployeeProductionProfile = ({ employeeId, onClose }) => {
 
         <div className="print-button">
           <button className="print-btn" onClick={printEmployee}>
-             Print
+            Print
           </button>
         </div>
       </div>

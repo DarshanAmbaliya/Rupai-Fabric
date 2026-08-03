@@ -11,10 +11,14 @@ const ProductionReport = () => {
   const [operators, setOperators] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
-  const [sortOrder, setSortOrder] = useState(null);
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [showEmployeeFilter, setShowEmployeeFilter] = useState(false);
+  const [searchEmployee, setSearchEmployee] = useState("");
+  const [efficiencyThreshold, setEfficiencyThreshold] = useState(85);
 
   // --- NEW METRIC STATE ---
-  const [metric, setMetric] = useState("meter"); // Options: meter, efficiency, totalPick, avgPick
+  const [metric, setMetric] = useState("efficiency"); // Options: meter, efficiency, totalPick, avgPick
 
   const API_BASE_URL = window.location.hostname === "localhost"
     ? "http://localhost:5000"
@@ -51,7 +55,7 @@ const ProductionReport = () => {
 
       const operatorList = Array.from(operatorMap.values());
       setOperators(operatorList);
-
+      setSelectedEmployees(operatorList.map(op => op.id));
       // 2. Prepare raw table rows with conditional metric calculations
       const table = Object.keys(monthData)
         .sort((a, b) => {
@@ -118,6 +122,26 @@ const ProductionReport = () => {
     }
   };
 
+  const handleEmployeeChange = (id) => {
+    setSelectedEmployees(prev =>
+      prev.includes(id)
+        ? prev.filter(x => x !== id)
+        : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedEmployees.length === operators.length) {
+      setSelectedEmployees([]);
+    } else {
+      setSelectedEmployees(operators.map(op => op.id));
+    }
+  };
+
+  const filteredEmployees = operators.filter(op =>
+    op.name.toLowerCase().includes(searchEmployee.toLowerCase())
+  );
+
   // --- FILTER LOGIC ---
   const filteredData = tableData.filter((row) => {
     if (!row) return false;
@@ -164,8 +188,11 @@ const ProductionReport = () => {
     return "Grand Total";
   };
 
-  // Sort operators based on footer Grand Total
-  const sortedOperators = [...operators].sort((a, b) => {
+  const visibleOperators = operators.filter(op =>
+    selectedEmployees.includes(op.id)
+  );
+
+  const sortedOperators = [...visibleOperators].sort((a, b) => {
     if (!sortOrder) return 0;
 
     const getOperatorGrandTotal = (opId) => {
@@ -194,6 +221,10 @@ const ProductionReport = () => {
       : totalB - totalA;
   });
 
+  const getBonus = (efficiency) => {
+    return efficiency > 90 ? Math.floor(efficiency - 90) : 0;
+  };
+
   const printProductionReport = () => {
     document.body.classList.add("print-productionreport");
     window.print();
@@ -201,11 +232,11 @@ const ProductionReport = () => {
   };
 
   return (
-    <section className="production-report-section no-print">
+    <section className="production-report-section">
       <div className="container">
         <div className="row">
           <h2>Production Report
-          <button className="print-btn" onClick={printProductionReport}>
+            <button className="print-btn" onClick={printProductionReport}>
               Print
             </button>
           </h2>
@@ -215,8 +246,8 @@ const ProductionReport = () => {
             <div className="filter-menu">
               <label><strong>View Metric: </strong></label>
               <select value={metric} onChange={(e) => setMetric(e.target.value)}>
-                <option value="meter">Production Meter (m)</option>
                 <option value="efficiency">Average Efficiency (%)</option>
+                <option value="meter">Production Meter (m)</option>
                 {/* <option value="totalPick">Total Pick</option>
                 <option value="avgPick">Average Pick per Machine</option> */}
               </select>
@@ -281,6 +312,69 @@ const ProductionReport = () => {
 
               </select>
             </div>
+            <div className="filter-menu employee-filter">
+              <label><strong>Employees: </strong></label>
+              <div
+                className="employee-select"
+                onClick={() => setShowEmployeeFilter(!showEmployeeFilter)}
+              >
+                {selectedEmployees.length === operators.length
+                  ? "All Employees"
+                  : `${selectedEmployees.length} Selected`}
+
+                <span>▼</span>
+              </div>
+              {showEmployeeFilter && (
+                <div className="employee-dropdown">
+                  <input
+                    type="text"
+                    placeholder="Search Employee..."
+                    value={searchEmployee}
+                    onChange={(e) => setSearchEmployee(e.target.value)}
+                  />
+                  <label className="employee-item">
+                    <input
+                      type="checkbox"
+                      checked={selectedEmployees.length === operators.length}
+                      onChange={handleSelectAll}
+                    />
+                    Select All
+                  </label>
+                  <hr />
+                  {filteredEmployees.map(op => (
+                    <label
+                      key={op.id}
+                      className="employee-item"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedEmployees.includes(op.id)}
+                        onChange={() => handleEmployeeChange(op.id)}
+                      />
+                      {op.name}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {metric === "efficiency" && (
+              <div className="filter-menu">
+                <label>
+                  <strong>Alert Below:</strong>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={efficiencyThreshold}
+                  onChange={(e) =>
+                    setEfficiencyThreshold(Number(e.target.value) || 0)
+                  }
+                  placeholder="Enter %"
+                />
+              </div>
+            )}
 
             {(startDate || endDate) && (
               <button
@@ -327,7 +421,11 @@ const ProductionReport = () => {
                         </NavLink>
                       </td>
                       {sortedOperators.map((op) => (
-                        <td key={op.id}>{getVal(row, op.id)}</td>
+                        <td key={op.id} className={
+                          metric === "efficiency" && getVal(row, op.id) > 0 && getVal(row, op.id) < efficiencyThreshold
+                            ? "alert"
+                            : ""
+                        }>{getVal(row, op.id)}</td>
                       ))}
                       <td style={{ fontWeight: "bold" }}>{getRowSummary(row)}</td>
                     </tr>
@@ -342,18 +440,80 @@ const ProductionReport = () => {
                 <tr>
                   <td>{getFooterSummaryLabel()}</td>
                   {sortedOperators.map((op) => {
-                    const values = filteredData.map(row => getVal(row, op.id)).filter(v => v > 0);
-                    const footerVal = (metric === "efficiency" || metric === "avgPick")
-                      ? (values.length ? parseFloat((values.reduce((s, v) => s + v, 0) / values.length).toFixed(2)) : 0)
-                      : filteredData.reduce((sum, row) => sum + getVal(row, op.id), 0);
+                    let sum = 0;
+                    let count = 0;
+
+                    filteredData.forEach((row) => {
+                      const value = Number(getVal(row, op.id)) || 0;
+
+                      if (value > 0) {
+                        sum += value;
+                        count++;
+                      }
+                    });
+
+                    const footerVal =
+                      metric === "efficiency" || metric === "avgPick"
+                        ? (count > 0 ? Number((sum / count).toFixed(2)) : 0)
+                        : filteredData.reduce((total, row) => total + (Number(getVal(row, op.id)) || 0), 0);
 
                     return <td key={op.id}>{footerVal}</td>;
                   })}
                   <td>
-                    {(metric === "efficiency" || metric === "avgPick")
-                      ? (filteredData.length ? parseFloat((currentViewGrandTotal / filteredData.length).toFixed(2)) : 0)
-                      : currentViewGrandTotal
-                    }
+                    {(() => {
+                      if (metric === "efficiency" || metric === "avgPick") {
+                        let totalAvg = 0;
+                        let employeeCount = 0;
+
+                        sortedOperators.forEach((op) => {
+                          const values = filteredData
+                            .map((row) => getVal(row, op.id))
+                            .filter((v) => v > 0);
+
+                          if (values.length > 0) {
+                            const avg =
+                              values.reduce((sum, v) => sum + v, 0) / values.length;
+
+                            totalAvg += avg;
+                            employeeCount++;
+                          }
+                        });
+
+                        return employeeCount
+                          ? parseFloat((totalAvg / employeeCount).toFixed(2))
+                          : 0;
+                      }
+
+                      return currentViewGrandTotal;
+                    })()}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Bonus</td>
+
+                  {sortedOperators.map((op) => {
+                    const totalBonus = filteredData.reduce((sum, row) => {
+                      const efficiency = row[op.id]?.efficiency || 0;
+                      return sum + getBonus(efficiency);
+                    }, 0);
+
+                    return (
+                      <td key={op.id}>
+                        {totalBonus}
+                      </td>
+                    );
+                  })}
+
+                  <td>
+                    {sortedOperators.reduce((sum, op) => {
+                      return (
+                        sum +
+                        filteredData.reduce((bonus, row) => {
+                          const efficiency = row[op.id]?.efficiency || 0;
+                          return bonus + getBonus(efficiency);
+                        }, 0)
+                      );
+                    }, 0)}
                   </td>
                 </tr>
               </tfoot>
