@@ -62,26 +62,49 @@ exports.createEmployee = async (req, res) => {
   const { year, month, employees } = req.body;
 
   if (!year || !month) {
-    return res.status(400).json({ message: "Year and Month are required" });
+    return res.status(400).json({
+      message: "Year and Month are required"
+    });
   }
 
   try {
-    let payroll = await Payroll.findOne({ year: parseInt(year) });
+    const normalizedEmployees = employees.map(emp => ({
+      ...emp,
+
+      employeeId:
+        emp.employeeId && mongoose.Types.ObjectId.isValid(emp.employeeId)
+          ? emp.employeeId
+          : new mongoose.Types.ObjectId()
+    }));
+
+    let payroll = await Payroll.findOne({
+      year: parseInt(year)
+    });
 
     if (!payroll) {
-      payroll = new Payroll({ year: parseInt(year), months: {} });
+      payroll = new Payroll({
+        year: parseInt(year),
+        months: {}
+      });
     }
 
-    // Set the specific month (e.g., "january") in the Map
-    payroll.months.set(month.toLowerCase(), employees);
+    payroll.months.set(
+      month.toLowerCase(),
+      normalizedEmployees
+    );
 
-    // Tell Mongoose the Map data has changed
-    payroll.markModified('months');
+    payroll.markModified("months");
 
     const saved = await payroll.save();
+
     res.status(200).json(saved);
+
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    console.error(err);
+
+    res.status(400).json({
+      message: err.message
+    });
   }
 };
 
